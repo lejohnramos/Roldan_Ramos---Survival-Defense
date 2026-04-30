@@ -1611,6 +1611,7 @@ function applyUpgrade(id) {
   else if(id==='maxHp')     {maxHp+=30;hp=Math.min(hp+30,maxHp);}
 }
 
+// ========== FIXED showUpgrades (forces camera update & render) ==========
 function showUpgrades() {
   state = 'upgrade';
   document.getElementById('upgradeLvlBadge').textContent = 'LVL '+level;
@@ -1624,12 +1625,30 @@ function showUpgrades() {
     card.onclick=()=>{
       applyUpgrade(up.id);
       hideOverlay('upgradeOverlay');
-      state='playing'; lastTime=performance.now();
+      state='playing';
+      lastTime=performance.now();
+      // 🔧 FORCE CAMERA UPDATE AND RENDER – fixes disappearing player/enemies
+      updateCamera();
+      render();
       requestAnimationFrame(gameLoop);
     };
     container.appendChild(card);
   }
   showOverlay('upgradeOverlay');
+}
+
+// ========== FIXED resumeGame (forces camera update & render) ==========
+function resumeGame(){
+  if(state!=='paused')return;
+  const bgm = document.getElementById('bgMusic');
+  if (bgm) bgm.volume = musicVol;
+  hideOverlay('pauseOverlay');
+  state='playing';
+  lastTime=performance.now();
+  // 🔧 FORCE CAMERA UPDATE AND RENDER – fixes map disappearance after resume
+  updateCamera();
+  render();
+  requestAnimationFrame(gameLoop);
 }
 
 function pauseGame() {
@@ -1660,15 +1679,6 @@ function addTag(container, label){
   container.appendChild(span);
 }
 
-function resumeGame(){
-  if(state!=='paused')return;
-  const bgm = document.getElementById('bgMusic');
-  if (bgm) bgm.volume = musicVol;
-  hideOverlay('pauseOverlay');
-  state='playing'; lastTime=performance.now();
-  requestAnimationFrame(gameLoop);
-}
-
 function endGame(won){
   stopBgMusic();
   state='end';
@@ -1690,13 +1700,6 @@ function endGame(won){
   document.getElementById('esKills').textContent  = kills;
   document.getElementById('esLevel').textContent  = level;
   document.getElementById('mpEndScores').style.display = 'none';
-  // Inside endGame(), after saving high score
-setTimeout(() => {
-  const name = prompt('Enter your name for the leaderboard (max 12 chars):');
-  if (name && name.trim()) {
-    submitScore(name.trim(), kills, wave, level);
-  }
-}, 500);
   showOverlay('endOverlay');
 }
 
