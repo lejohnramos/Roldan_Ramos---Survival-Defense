@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no"> 
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Survival Defense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="game.css">
+  <style>
+
+    #c {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background: transparent;
+}
+
+   /* ── Shop Button ── */
+  #shopBtn {
+    background: rgba(167,139,250,0.15);
+    border: 1px solid rgba(167,139,250,0.4);
+    color: #a78bfa;
+    font-family: 'Orbitron', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  #shopBtn:hover {
+    background: rgba(167,139,250,0.3);
+    box-shadow: 0 0 12px rgba(167,139,250,0.3);
+  }
+  #diariteHud {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #a78bfa;
+    text-shadow: 0 0 10px rgba(167,139,250,0.5);
+  }
+  #diariteHud svg { flex-shrink: 0; }   
+
+    /* ── Multiplayer Overlay Styles ── */
+    .mp-panel {
+      max-width: 480px;
+      width: 90%;
+    }
+    .mp-title {
+      font-family: 'Orbitron', monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--blue, #60a5fa);
+      letter-spacing: 4px;
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 0 0 20px rgba(96,165,250,0.6);
+    }
+    .mp-sub {
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: rgba(96,165,250,0.5);
+      margin-bottom: 24px;
+      font-family: 'Share Tech Mono', monospace;
+    }
+    .mp-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .mp-input {
+      flex: 1;
+      background: rgba(96,165,250,0.07);
+      border: 1px solid rgba(96,165,250,0.25);
+      color: #e0f2fe;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 14px;
+      padding: 10px 14px;
+      border-radius: 6px;
+      outline: none;
+      letter-spacing: 2px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .mp-input:focus {
+      border-color: rgba(96,165,250,0.6);
+      box-shadow: 0 0 12px rgba(96,165,250,0.2);
+    }
+    .mp-input::placeholder { color: rgba(96,165,250,0.3); }
+    .mp-status {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-align: center;
+      min-height: 18px;
+      margin-bottom: 16px;
+      transition: color 0.3s;
+    }
+    .mp-status.ok    { color: #34d399; }
+    .mp-status.err   { color: #f87171; }
+    .mp-status.info  { color: #60a5fa; }
+
+    /* Lobby */
+    .lobby-section {
+      margin-top: 10px;
+    }
+    .lobby-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 4px;
+      color: rgba(96,165,250,0.4);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+    .lobby-players {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .lobby-slot {
+      background: rgba(96,165,250,0.05);
+      border: 1px solid rgba(96,165,250,0.12);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 1px;
+      color: rgba(96,165,250,0.3);
+      min-height: 44px;
+      transition: all 0.3s;
+    }
+    .lobby-slot.filled {
+      border-color: rgba(96,165,250,0.35);
+      background: rgba(96,165,250,0.1);
+      color: #e0f2fe;
+    }
+    .lobby-slot.filled.is-you {
+      border-color: rgba(96,165,250,0.6);
+      box-shadow: 0 0 10px rgba(96,165,250,0.15);
+    }
+    .lobby-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: rgba(96,165,250,0.15);
+    }
+    .lobby-slot.filled .lobby-dot {
+      box-shadow: 0 0 6px currentColor;
+    }
+    .lobby-you-tag {
+      font-size: 8px;
+      letter-spacing: 2px;
+      color: rgba(96,165,250,0.5);
+      margin-left: auto;
+    }
+    .lobby-waiting-hint {
+      text-align: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      color: rgba(96,165,250,0.35);
+      margin-bottom: 14px;
+      animation: pulse-hint 2s ease-in-out infinite;
+    }
+    @keyframes pulse-hint {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1;   }
+    }
+    .btn-mp-back {
+      background: transparent;
+      border: 1px solid rgba(96,165,250,0.25);
+      color: rgba(96,165,250,0.5);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 6px;
+      transition: all 0.2s;
+    }
+    .btn-mp-back:hover {
+      border-color: rgba(96,165,250,0.5);
+      color: rgba(96,165,250,0.8);
+    }
+    .btn-primary-sm {
+      background: linear-gradient(135deg, rgba(96,165,250,0.2), rgba(96,165,250,0.1));
+      border: 1px solid rgba(96,165,250,0.5);
+      color: #60a5fa;
+      font-family: 'Orbitron', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary-sm:hover {
+      background: linear-gradient(135deg, rgba(96,165,250,0.35), rgba(96,165,250,0.18));
+      box-shadow: 0 0 16px rgba(96,165,250,0.3);
+    }
+    .btn-primary-sm:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Multiplayer HUD extras */
+    #mpScoreboard {
+      display: none;
+      position: absolute;
+      top: 54px;
+      right: 14px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(96,165,250,0.18);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      z-index: 10;
+      min-width: 130px;
+    }
+    #mpScoreboard .sb-title {
+      color: rgba(96,165,250,0.5);
+      font-size: 8px;
+      letter-spacing: 3px;
+      margin-bottom: 6px;
+    }
+    .sb-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 4px;
+      color: rgba(255,255,255,0.75);
+    }
+    .sb-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .sb-name { flex: 1; font-size: 9px; }
+    .sb-kills { color: #fbbf24; font-size: 10px; }
+    .sb-dead { opacity: 0.35; text-decoration: line-through; }
+
+    /* Add multiplayer button to menu */
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid rgba(96,165,250,0.35);
+      color: rgba(96,165,250,0.7);
+      font-family: 'Orbitron', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      padding: 12px 28px;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(96,165,250,0.65);
+      color: #60a5fa;
+      box-shadow: 0 0 14px rgba(96,165,250,0.2);
+    }
+
+    /* End overlay multiplayer summary */
+    .mp-end-scores {
+      display: none;
+      margin: 12px 0;
+      border-top: 1px solid rgba(96,165,250,0.15);
+      padding-top: 12px;
+    }
+    .mp-end-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px;
+      padding: 4px 0;
+      color: rgba(255,255,255,0.7);
+    }
+    .mp-end-dot { width: 8px; height: 8px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+<div id="gameContainer">
+  <div id="mobileControls">
+    <button id="mobilePauseBtn" title="Pause">⏸</button>
+  </div>
+  <canvas id="menuBg" width="1920" height="1080"
+  style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;">
+  </canvas>
+  <canvas id="c" width="1040" height="800"></canvas>
+  <audio id="sShoot" src="../Sounds_Assets/Shoot.mp3"></audio>
+  <audio id="sHit"   src="../Sounds_Assets/Hit.mp3"></audio>
+  <audio id="sLevel" src="../Sounds_Assets/Background Music.mp3"></audio>
+  <audio id="bgMusic" src="../Sounds_Assets/Background Music.mp3" loop></audio>
+
+  <div id="leaderboard">
+  <div class="lb-header">
+    <span class="lb-title">🏆 LEADERBOARD</span>
+    <span class="lb-sub">TOP OPERATIVES</span>
+  </div>
+  <div id="lbRows">
+    <div class="lb-loading">LOADING...</div>
+  </div>
+</div>
+
+  <!-- MINIMAP -->
+  <div id="minimap">
+    <canvas id="minimapCanvas" width="120" height="92"></canvas>
+    <div class="minimap-label">RADAR</div>
+  </div>
+
+  <!-- HUD -->
+
+  <div id="hud">
+    <div id="comboDisplay" style="display:none">
+    <span id="comboCount">x2</span>
+    <span class="combo-label">COMBO</span>
+  </div>
+  <div class="hud-group">
+    <div class="hud-stat">
+      <span class="hud-label">LVL</span>
+      <span class="hud-val" id="lvlVal">1</span>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-label">KILLS</span>
+      <span class="hud-val" id="killVal">0</span>
+    </div>
+  </div>
+  <div class="hud-center">
+    <span id="timerVal">2:00</span>
+    <span class="hud-label" style="font-size:9px; letter-spacing:3px;">SURVIVE</span>
+  </div>
+    <div class="hud-group">
+    <!-- Diarite display -->
+    <div class="hud-stat">
+      <span class="hud-label">WAVE</span>
+      <span class="hud-val" id="waveVal">1</span>
+    </div>
+    <div class="hud-stat">
+      <span class="hud-label">HP</span>
+      <span class="hud-val" id="hpVal">100</span>
+    </div>
+    <div id="diariteHud">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+    <polygon points="6.5,0.5 11,3.5 11,9.5 6.5,12.5 2,9.5 2,3.5"
+      fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.8)" stroke-width="1"/>
+    <circle cx="6.5" cy="6.5" r="2" fill="rgba(167,139,250,0.9)"/>
+  </svg>
+    <span id="diariteVal">0</span>
+  </div>
+  <button id="shopBtn" onclick="openShop()">◆ SHOP</button>
+    <button id="pauseBtn" title="Pause [P]">⏸</button>
+    </div>
+  </div>
+
+  <!-- Multiplayer scoreboard (shown during MP game) -->
+  <div id="mpScoreboard">
+    <div class="sb-title">PLAYERS</div>
+    <div id="sbRows"></div>
+  </div>
+
+  <!-- HP + XP bars -->
+  <div id="bars">
+    <div class="bar-row">
+      <span class="bar-label">HP</span>
+      <div class="bar-track"><div id="healthFill"></div></div>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">XP</span>
+      <div class="bar-track"><div id="xpFill"></div></div>
+    </div>
+  </div>
+
+  <!-- Controls hint -->
+  <div id="controls">
+    <span class="ctrl-hint">WASD · Move</span>
+    <span class="ctrl-hint">Auto-fire</span>
+    <span class="ctrl-hint">P · Pause</span>
+  </div>
+
+<!-- ══════════ MAIN MENU ══════════ -->
+<div id="menuOverlay" class="overlay active">
+  <div class="menu-fullscreen">
+
+    <!-- LEFT SIDE — Branding -->
+    <div class="menu-left">
+      <div class="menu-tag">— SURVIVAL DEFENSE —</div>
+      <h1 class="menu-title">ORBITAL<br><span class="menu-title-accent">BARRAGE</span></h1>
+      <p class="menu-desc">Endure 2 minutes. Upgrade. Conquer.<br>How long can you hold the line?</p>
+
+      <!-- Records -->
+      <div class="menu-records" id="menuRecords">
+        <div class="menu-record-item">
+          <span class="menu-record-label">BEST WAVE</span>
+          <span class="menu-record-val" id="recWave">—</span>
+        </div>
+        <div class="menu-record-divider"></div>
+        <div class="menu-record-item">
+          <span class="menu-record-label">BEST KILLS</span>
+          <span class="menu-record-val" id="recKills">—</span>
+        </div>
+        <div class="menu-record-divider"></div>
+        <div class="menu-record-item">
+          <span class="menu-record-label">BEST LEVEL</span>
+          <span class="menu-record-val" id="recLevel">—</span>
+        </div>
+      </div>
+
+      <!-- Last run -->
+      <div class="menu-last-run" id="menuStatsRow" style="display:none">
+        <span class="menu-last-label">LAST RUN:</span>
+        <span class="menu-last-val">Wave <span id="msWave">—</span></span>
+        <span class="menu-last-sep">·</span>
+        <span class="menu-last-val"><span id="msKills">—</span> Kills</span>
+      </div>
+
+      <!-- Enemy legend -->
+      <div class="menu-legend-new">
+        <div class="legend-title">ENEMY TYPES</div>
+        <div class="legend-grid">
+          <div class="legend-item-new"><span class="dot-new" style="background:#e879f9"></span>Standard</div>
+          <div class="legend-item-new"><span class="dot-new" style="background:#fb923c"></span>Fast</div>
+          <div class="legend-item-new"><span class="dot-new" style="background:#f87171"></span>Elite</div>
+          <div class="legend-item-new"><span class="dot-new" style="background:#ff4444"></span>Boss</div>
+          <div class="legend-item-new"><span class="dot-new" style="background:#a78bfa"></span>Splitter</div>
+          <div class="legend-item-new"><span class="dot-new" style="background:#38bdf8"></span>Shielded</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT SIDE — Controls -->
+    <div class="menu-right">
+
+      <!-- Diarite balance -->
+      <div class="menu-diarite">
+        <svg width="16" height="16" viewBox="0 0 13 13" fill="none">
+          <polygon points="6.5,0.5 11,3.5 11,9.5 6.5,12.5 2,9.5 2,3.5"
+            fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.8)" stroke-width="1"/>
+          <circle cx="6.5" cy="6.5" r="2" fill="rgba(167,139,250,0.9)"/>
+        </svg>
+        <span id="menuDiariteVal">0</span>
+        <span class="menu-diarite-label">DIARITE</span>
+      </div>
+
+      <!-- Settings -->
+      <div class="menu-settings-new">
+        <div class="settings-row">
+          <label class="settings-label">🎵 MUSIC</label>
+          <input type="range" id="musicVol" class="vol-slider" min="0" max="100" value="40">
+          <span class="vol-val" id="musicVolVal">40</span>
+        </div>
+        <div class="settings-row">
+          <label class="settings-label">🔊 SFX</label>
+          <input type="range" id="sfxVol" class="vol-slider" min="0" max="100" value="80">
+          <span class="vol-val" id="sfxVolVal">80</span>
+        </div>
+        <div class="settings-row">
+          <label class="settings-label">⚔️ DIFFICULTY</label>
+          <div class="diff-btns">
+            <button class="diff-btn" data-diff="easy">EASY</button>
+            <button class="diff-btn diff-btn--active" data-diff="normal">NORMAL</button>
+            <button class="diff-btn" data-diff="hard">HARD</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="menu-buttons">
+        <button class="menu-btn-primary" id="startBtn">
+          <span>▶</span> START MISSION
+        </button>
+        <button class="menu-btn-secondary" id="multiplayerBtn">
+          ⚡ MULTIPLAYER
+        </button>
+        <button class="menu-btn-shop" id="menuShopBtn" onclick="openShop()">
+          ◆ DIARITE SHOP
+        </button>
+      </div>
+
+      <!-- Controls hint -->
+      <div class="menu-controls-hint">
+        <span>WASD · Move</span>
+        <span>·</span>
+        <span>Auto-attacks nearest enemy</span>
+        <span>·</span>
+        <span>P · Pause</span>
+      </div>
+
+      <!-- In the HUD group, near the pause button -->
+<button id="fireModeBtn" title="Toggle Fire Mode [F]">🎯 AUTO</button>
+<button id="pauseBtn" title="Pause [P]">⏸</button>
+
+<!-- In the settings panel -->
+<div class="settings-row">
+  <label class="settings-label">🔫 FIRE MODE</label>
+  <div class="diff-btns">
+    <button class="diff-btn diff-btn--active" data-fire="auto">AUTO</button>
+    <button class="diff-btn" data-fire="manual">MANUAL</button>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+  <!-- ══════════ MULTIPLAYER CONNECT ══════════ -->
+  <div id="mpConnectOverlay" class="overlay">
+    <div class="overlay-panel mp-panel">
+      <div class="mp-title">MULTIPLAYER</div>
+      <div class="mp-sub">— LAN CO-OP · UP TO 4 PLAYERS —</div>
+
+      <div class="mp-input-row">
+        <input class="mp-input" id="mpIpInput" type="text"
+               placeholder="192.168.x.x  or  localhost"
+               spellcheck="false" autocomplete="off" maxlength="40">
+        <button class="btn-primary-sm" id="mpConnectBtn">CONNECT</button>
+      </div>
+
+      <div class="mp-status info" id="mpStatus">Enter the server IP shown in PowerShell</div>
+
+      <button class="btn-mp-back" id="mpBackBtn">← BACK TO MENU</button>
+    </div>
+  </div>
+
+  <!-- ══════════ MULTIPLAYER LOBBY ══════════ -->
+  <div id="mpLobbyOverlay" class="overlay">
+    <div class="overlay-panel mp-panel">
+      <div class="mp-title">LOBBY</div>
+      <div class="mp-sub" id="lobbySubtitle">— WAITING FOR PLAYERS —</div>
+
+      <div class="lobby-section">
+        <div class="lobby-label">CONNECTED PLAYERS</div>
+        <div class="lobby-players" id="lobbyPlayerSlots">
+          <div class="lobby-slot" id="lslot0"><div class="lobby-dot"></div><span>EMPTY</span></div>
+          <div class="lobby-slot" id="lslot1"><div class="lobby-dot"></div><span>EMPTY</span></div>
+          <div class="lobby-slot" id="lslot2"><div class="lobby-dot"></div><span>EMPTY</span></div>
+          <div class="lobby-slot" id="lslot3"><div class="lobby-dot"></div><span>EMPTY</span></div>
+        </div>
+
+        <div class="lobby-waiting-hint" id="lobbyWaitingHint">Waiting for host to start...</div>
+
+        <!-- Host-only controls -->
+        <div id="hostControls" style="display:none">
+          <div class="settings-row" style="margin-bottom:12px;">
+            <label class="settings-label">⚔️ DIFFICULTY</label>
+            <div class="diff-btns">
+              <button class="diff-btn" data-mdiff="easy">EASY</button>
+              <button class="diff-btn diff-btn--active" data-mdiff="normal">NORMAL</button>
+              <button class="diff-btn" data-mdiff="hard">HARD</button>
+            </div>
+          </div>
+          <button class="btn-primary" id="mpStartBtn">▶ START GAME</button>
+        </div>
+      </div>
+
+      <button class="btn-mp-back" id="mpLobbyBackBtn">✕ DISCONNECT</button>
+    </div>
+  </div>
+
+  <!-- ══════════ PAUSE MENU ══════════ -->
+  <div id="pauseOverlay" class="overlay">
+    <div class="overlay-panel pause-panel">
+      <div class="pause-header">
+        <div class="pause-icon">⏸</div>
+        <h2 class="pause-title">PAUSED</h2>
+      </div>
+      <div class="pause-stats">
+        <div class="ps-row"><span>Time Remaining</span><span id="psTime">—</span></div>
+        <div class="ps-row"><span>Wave</span><span id="psWave">—</span></div>
+        <div class="ps-row"><span>Kills</span><span id="psKills">—</span></div>
+        <div class="ps-row"><span>Level</span><span id="psLevel">—</span></div>
+        <div class="ps-row"><span>HP</span><span id="psHp">—</span></div>
+      </div>
+      <div class="pause-abilities" id="pauseAbilities"></div>
+      <div class="pause-buttons">
+        <button class="btn-primary" id="resumeBtn">▶ RESUME</button>
+        <button class="btn-ghost" id="quitBtn">✕ QUIT TO MENU</button>
+      </div>
+      <div class="menu-hint">Press P to resume</div>
+    </div>
+  </div>
+
+  <!-- ══════════ GAME OVER / WIN ══════════ -->
+  <div id="endOverlay" class="overlay">
+    <div class="overlay-panel end-panel">
+      <div id="endIcon" class="end-icon">💀</div>
+      <h1 id="endTitle" class="end-title">YOU DIED</h1>
+      <p id="endSub" class="end-sub">—</p>
+      <div class="end-stats">
+        <div class="es-block"><span class="es-v" id="esWave">—</span><span class="es-l">WAVE</span></div>
+        <div class="es-block"><span class="es-v" id="esKills">—</span><span class="es-l">KILLS</span></div>
+        <div class="es-block"><span class="es-v" id="esLevel">—</span><span class="es-l">LEVEL</span></div>
+      </div>
+      <!-- Multiplayer final scores (shown in MP mode) -->
+      <div class="mp-end-scores" id="mpEndScores">
+        <div class="lobby-label" style="margin-bottom:8px;">SQUAD RESULTS</div>
+        <div id="mpEndRows"></div>
+      </div>
+      <button class="btn-primary" id="replayBtn">PLAY AGAIN</button>
+      <button class="btn-ghost" id="menuBtn">MAIN MENU</button>
+    </div>
+  </div>
+
+  <!-- ══════════ UPGRADE MENU ══════════ -->
+  <div id="upgradeOverlay" class="overlay">
+    <div class="overlay-panel upgrade-panel">
+      <div class="upgrade-header">
+        <span class="upgrade-level-badge" id="upgradeLvlBadge">LVL 2</span>
+        <h2>CHOOSE UPGRADE</h2>
+        <p>Select one enhancement for your arsenal</p>
+      </div>
+      <div id="upgradeCards"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="game.js"></script>
+
+<script>
+function resizeGameCanvas() {
+  const container = document.getElementById('gameContainer');
+  const canvas = document.getElementById('c');
+  const isMobileDevice = window.innerWidth <= 900 || window.innerHeight <= 600
+    || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (isMobileDevice) {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    container.style.width  = W + 'px';
+    container.style.height = H + 'px';
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+  }
+}
+resizeGameCanvas();
+window.addEventListener('resize', resizeGameCanvas);
+window.addEventListener('orientationchange', () => setTimeout(resizeGameCanvas, 100));
+
+document.getElementById('mobilePauseBtn').addEventListener('click', function(e) {
+  e.preventDefault();
+  if (state === 'playing') pauseGame();
+  else if (state === 'paused') resumeGame();
+});
+
+document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+
+let lastTap = 0;
+document.addEventListener('touchend', function(e) {
+  const now = Date.now();
+  if (now - lastTap < 300) e.preventDefault();
+  lastTap = now;
+}, { passive: false });
+</script>
+
+</body>
+</html>

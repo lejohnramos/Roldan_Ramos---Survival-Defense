@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+<title>Survival Defense — Survive the Horde</title>
+<meta name="description" content="A relentless wave defense shooter. Survive 2 minutes against increasingly deadly enemies. Choose upgrades wisely to survive the horde.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Share+Tech+Mono&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="Roldan_Ramos---Survival-Defense/Assets_Portal/Assets_Portal_Functions/style.css">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+<!-- Animated background -->
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+<div class="bg-glow bg-glow-3"></div>
+<canvas id="bgCanvas"></canvas>
+
+<!-- floating music control (extra) -->
+<div id="floatingMusicBtn" class="floating-music-btn">🎵</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">ORBITAL<span class="logo-accent">BARRAGE</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features">Features</a></li>
+      <li><a href="#upgrades">Upgrades</a></li>
+      <li><a href="#enemies">Enemies</a></li>
+      <li><a href="#weapons">Weapons</a></li>
+      <li><a href="#shopSection">Shop</a></li>
+      <li><a href="#damageCalc">Damage Calc</a></li>
+      <li><a href="#tips">Tips</a></li>
+      <li>
+        <button id="musicToggle" class="music-toggle" title="Toggle Music">🎵</button>
+      </li>
+      <li><a href="Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/game.html" class="nav-cta">▶ PLAY NOW</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="pulse-dot"></span>
+    LIVE — WAVE DEFENSE ACTIVE
+    <span class="pulse-dot"></span>
+  </div>
+  <h1 class="hero-title">
+    <span class="title-line-1">SURVIVE</span>
+    <span class="title-line-2">THE <span class="title-accent">HORDE</span></span>
+  </h1>
+  <p class="hero-sub">
+    120 seconds. Relentless enemies. 11+ deadly upgrades.<br>
+    Choose your build. Master your movement. <strong>How long can you hold the line?</strong>
+  </p>
+  <div class="hero-actions">
+    <a href="Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/game.html" class="btn-primary">
+      <span class="btn-icon">▶</span>
+      LAUNCH GAME
+    </a>
+    <a href="#features" class="btn-ghost">LEARN MORE</a>
+  </div>
+  <div class="hero-stats">
+    <div class="h-stat">
+      <span class="h-stat-val">120s</span>
+      <span class="h-stat-label">to survive</span>
+    </div>
+    <div class="h-stat-divider"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">11+</span>
+      <span class="h-stat-label">upgrades</span>
+    </div>
+    <div class="h-stat-divider"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">6</span>
+      <span class="h-stat-label">enemy types</span>
+    </div>
+    <div class="h-stat-divider"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">🔥</span>
+      <span class="h-stat-label">Combo system</span>
+    </div>
+    <div class="h-stat-divider"></div>
+    <div class="h-stat">
+      <span class="h-stat-val">⚔️</span>
+      <span class="h-stat-label">5 weapons</span>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="section">
+  <div class="section-label">// GAME MECHANICS</div>
+  <h2 class="section-title">BUILT FOR <span class="accent">CHAOS</span></h2>
+  <p class="section-desc">Every run is unique. Every decision matters. Survive, upgrade, and conquer the endless horde.</p>
+  <div class="features-grid">
+    <div class="feature-card feature-card--large">
+      <div class="feature-card-bg"></div>
+      <div class="feature-icon">🎯</div>
+      <h3>Auto-Targeting Combat</h3>
+      <p>Your weapon locks onto the nearest enemy automatically. Focus on movement and positioning — the bullets handle themselves. Survive by staying one step ahead of the swarm.</p>
+      <div class="feature-tag">AUTO-ATTACK</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-bg"></div>
+      <div class="feature-icon">🌊</div>
+      <h3>Escalating Waves</h3>
+      <p>Every 15 seconds the wave counter ticks up, bringing faster spawns and tougher enemies. The horde grows stronger — so must you.</p>
+      <div class="feature-tag">WAVE SYSTEM</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-bg"></div>
+      <div class="feature-icon">⬆️</div>
+      <h3>Rogue-Like Upgrades</h3>
+      <p>Level up, pick from 3 random upgrades. Stack damage, fire rate, or unlock devastating new weapons. Every choice shapes your run.</p>
+      <div class="feature-tag">ROGUELITE</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-bg"></div>
+      <div class="feature-icon">💥</div>
+      <h3>Chunky Combat FX</h3>
+      <p>Every kill, every hit erupts into a burst of glowing particles. Screen shake, hit flashes, and shockwaves make combat feel visceral and satisfying.</p>
+      <div class="feature-tag">VISUAL FX</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-bg"></div>
+      <div class="feature-icon">🏃</div>
+      <h3>Movement Mastery</h3>
+      <p>WASD or Arrow keys. Simple controls, deep skill expression. Dodge, kite, and reposition to keep the horde at bay. Speed is survival.</p>
+      <div class="feature-tag">WASD / ARROWS</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-bg"></div>
+      <div class="feature-icon">🔥</div>
+      <h3>Combo System</h3>
+      <p>Chain kills within 2.5 seconds to build your combo meter. Higher combos mean more adrenaline — and bragging rights.</p>
+      <div class="feature-tag">COMBO</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== GAMEPLAY PREVIEW ========== -->
+<section id="gameplay" class="section">
+  <div class="section-label">// WATCH THE ACTION</div>
+  <h2 class="section-title">SEE THE <span class="accent">CHAOS</span></h2>
+  <p class="section-desc">Undiluted wave defense. Auto‑targeting, devastating weapons, and an ever‑growing horde.</p>
+
+  <div class="gameplay-container">
+    <div class="gameplay-mock" id="gameplayMock">
+<div class="gameplay-mock" id="gameplayMock">
+  <video autoplay loop muted playsinline poster="thumbnail.jpg" style="width:100%; border-radius:16px;">
+    <source src="/Roldan_Ramos---Survival-Defense/Assets_Portal/Recording 2026-04-30 112024.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="gameplay-overlay">
+    <div class="glow-ring"></div>
+    <div class="play-hint">🎬 GAMEPLAY PREVIEW</div>
+  </div>
+</div>
+    <div class="gameplay-caption">
+      ⚡ Real in‑engine capture • Auto‑targeting • Lasers • Rocket barrages • Boss battles
+    </div>
+    <div class="gameplay-actions">
+      <a href="Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/game.html" class="btn-primary">
+        <span class="btn-icon">▶</span> PLAY NOW
+      </a>
+      <button class="btn-ghost" id="refreshPreviewBtn">⟳ REPLAY PREVIEW</button>
+    </div>
+  </div>
+</section>
+
+<!-- UPGRADES SHOWCASE -->
+<section id="upgrades" class="section">
+  <div class="section-label">// POWER-UPS</div>
+  <h2 class="section-title">CHOOSE YOUR <span class="accent">BUILD</span></h2>
+  <p class="section-desc">Every level-up presents 3 random choices from 11+ upgrades. Stack them wisely to craft a winning strategy.</p>
+  <div class="upgrades-grid">
+    <div class="upgrade-showcase-card" data-color="#f59e0b">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">⚡</div>
+      <div class="usc-info">
+        <div class="usc-name">Swift Boots</div>
+        <div class="usc-desc">+20% movement speed — outrun anything</div>
+      </div>
+      <div class="usc-stat">+20%</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#ef4444">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🔥</div>
+      <div class="usc-info">
+        <div class="usc-name">Power Strike</div>
+        <div class="usc-desc">+50% bullet damage — melt elites</div>
+      </div>
+      <div class="usc-stat">×1.5</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#8b5cf6">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🌀</div>
+      <div class="usc-info">
+        <div class="usc-name">Rapid Fire</div>
+        <div class="usc-desc">+30% attack speed — bullet hell</div>
+      </div>
+      <div class="usc-stat">+30%</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#06b6d4">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">✨</div>
+      <div class="usc-info">
+        <div class="usc-name">Multi-Shot</div>
+        <div class="usc-desc">+1 projectile per shot (max 5) — crowd control</div>
+      </div>
+      <div class="usc-stat">+1</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#3b82f6">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">💠</div>
+      <div class="usc-info">
+        <div class="usc-name">Big Bullet</div>
+        <div class="usc-desc">+50% bullet size — never miss</div>
+      </div>
+      <div class="usc-stat">×1.5</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#10b981">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">💚</div>
+      <div class="usc-info">
+        <div class="usc-name">Regeneration</div>
+        <div class="usc-desc">+5 HP/sec — sustain through chaos</div>
+      </div>
+      <div class="usc-stat">+5/s</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#f43f5e">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">❤️</div>
+      <div class="usc-info">
+        <div class="usc-name">Fortify</div>
+        <div class="usc-desc">+30 max HP + full heal — second wind</div>
+      </div>
+      <div class="usc-stat">+30 HP</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#eab308">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🌊</div>
+      <div class="usc-info">
+        <div class="usc-name">Spread Shot</div>
+        <div class="usc-desc">🔥 NEW WEAPON: 5-way cone fire</div>
+      </div>
+      <div class="usc-stat">💥</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#a855f7">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🎯</div>
+      <div class="usc-info">
+        <div class="usc-name">Sniper</div>
+        <div class="usc-desc">🎯 NEW WEAPON: 3× damage, piercing</div>
+      </div>
+      <div class="usc-stat">💀</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#ec4899">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🔴</div>
+      <div class="usc-info">
+        <div class="usc-name">Laser Beam</div>
+        <div class="usc-desc">⚡ NEW WEAPON: Continuous melting beam</div>
+      </div>
+      <div class="usc-stat">🔥</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#f97316">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🚀</div>
+      <div class="usc-info">
+        <div class="usc-name">Rocket</div>
+        <div class="usc-desc">💣 NEW WEAPON: Homing explosive rockets</div>
+      </div>
+      <div class="usc-stat">💥</div>
+    </div>
+    <div class="upgrade-showcase-card" data-color="#14b8a6">
+      <div class="usc-glow"></div>
+      <div class="usc-icon">🔮</div>
+      <div class="usc-info">
+        <div class="usc-name">Orbit Shield</div>
+        <div class="usc-desc">🛡️ NEW WEAPON: 4 rotating orbs</div>
+      </div>
+      <div class="usc-stat">🌀</div>
+    </div>
+  </div>
+</section>
+
+<!-- ENEMIES SECTION -->
+<section id="enemies" class="section">
+  <div class="section-label">// THREAT ANALYSIS</div>
+  <h2 class="section-title">KNOW YOUR <span class="accent">ENEMIES</span></h2>
+  <p class="section-desc">The horde evolves. Learn their patterns, exploit their weaknesses, and adapt your strategy.</p>
+  <div class="enemies-container" id="enemiesContainer">
+    <!-- populated by enemy-previews.js -->
+  </div>
+</section>
+
+<!-- WEAPONS SECTION -->
+<section id="weapons" class="section">
+  <div class="section-label">// ARSENAL</div>
+  <h2 class="section-title">UNLOCK <span class="accent">DEVASTATING</span> WEAPONS</h2>
+  <p class="section-desc">Start with the basic rifle. Choose your path — each weapon changes how you approach the horde.</p>
+  <div class="weapons-grid">
+    <div class="weapon-card" data-weapon="basic">
+      <div class="weapon-icon">🔫</div>
+      <h3>Basic Rifle</h3>
+      <p>Reliable semi-automatic. Standard damage, standard fire rate. The foundation every soldier trusts.</p>
+      <div class="weapon-stats">
+        <span>⚡ Base dmg: 15</span>
+        <span>🔥 Rate: 0.55s</span>
+      </div>
+    </div>
+    <div class="weapon-card" data-weapon="spread">
+      <div class="weapon-icon">🌊</div>
+      <h3>Spread Shot</h3>
+      <p>Unlock: Upgrade. Fires a deadly 5-way cone. Perfect for clearing crowds and thinning the swarm.</p>
+      <div class="weapon-stats">
+        <span>⚡ 5 projectiles</span>
+        <span>🔥 Wide arc</span>
+      </div>
+    </div>
+    <div class="weapon-card" data-weapon="sniper">
+      <div class="weapon-icon">🎯</div>
+      <h3>Sniper Rifle</h3>
+      <p>Unlock: Upgrade. 3× damage with piercing rounds. One shot, one kill — even through multiple enemies.</p>
+      <div class="weapon-stats">
+        <span>⚡ 45 dmg</span>
+        <span>🔥 Piercing</span>
+      </div>
+    </div>
+    <div class="weapon-card" data-weapon="laser">
+      <div class="weapon-icon">🔴</div>
+      <h3>Laser Beam</h3>
+      <p>Unlock: Upgrade. Continuous beam that melts anything in its path. Hold down the destruction.</p>
+      <div class="weapon-stats">
+        <span>⚡ 35 DPS</span>
+        <span>🔥 Continuous</span>
+      </div>
+    </div>
+    <div class="weapon-card" data-weapon="rocket">
+      <div class="weapon-icon">🚀</div>
+      <h3>Rocket Launcher</h3>
+      <p>Unlock: Upgrade. Fire homing rockets that explode on impact. Massive area damage for crowd control.</p>
+      <div class="weapon-stats">
+        <span>⚡ 60 dmg + AoE</span>
+        <span>🔥 Homing</span>
+      </div>
+    </div>
+    <div class="weapon-card" data-weapon="orbit">
+      <div class="weapon-icon">🔮</div>
+      <h3>Orbit Shield</h3>
+      <p>Unlock: Upgrade. Summon 4 rotating orbs that orbit your character, damaging any enemy they touch.</p>
+      <div class="weapon-stats">
+        <span>⚡ 25 contact dmg</span>
+        <span>🔥 Passive defense</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== NEW SHOP SECTION ========== -->
+<section id="shopSection" class="section">
+  <div class="section-label">// DIARITE SHOP</div>
+  <h2 class="section-title">PERMANENT <span class="accent">UPGRADES</span></h2>
+  <p class="section-desc">Earn Diarite by defeating enemies. Unlock characters, weapons, and stat upgrades that persist across all runs.</p>
+
+  <!-- live currency display -->
+  <div class="shop-currency-container">
+    <div class="shop-currency-card">
+      <svg class="currency-icon-sm" viewBox="0 0 24 24">
+        <polygon points="12,2 20,7 20,17 12,22 4,17 4,7" fill="rgba(167,139,250,0.15)" stroke="#a78bfa" stroke-width="1.2"/>
+        <circle cx="12" cy="12" r="3" fill="#a78bfa"/>
+      </svg>
+      <span class="currency-label">DIARITE</span>
+      <span class="currency-amount" id="portalDiariteAmount">0</span>
+    </div>
+    <button class="btn-open-shop" id="openShopBtn">◆ OPEN FULL SHOP</button>
+  </div>
+
+  <div class="shop-preview-grid">
+    <!-- Characters -->
+    <div class="shop-category">
+      <div class="shop-category-title">⚡ OPERATIVES</div>
+      <div class="shop-items">
+        <div class="shop-item-card" data-item="ninja" data-price="800">
+          <div class="shop-item-icon">🗡️</div>
+          <div class="shop-item-name">NINJA</div>
+          <div class="shop-item-desc">+15% speed · +20% fire rate</div>
+          <div class="shop-item-price">
+            <svg class="price-icon-sm" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="#a78bfa" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="#a78bfa"/></svg>
+            <span>800</span>
+          </div>
+        </div>
+        <div class="shop-item-card" data-item="heavy" data-price="1000">
+          <div class="shop-item-icon">🛡️</div>
+          <div class="shop-item-name">HEAVY</div>
+          <div class="shop-item-desc">+30 HP · +20% damage</div>
+          <div class="shop-item-price">◆ 1000</div>
+        </div>
+        <div class="shop-item-card" data-item="medic" data-price="1500">
+          <div class="shop-item-icon">💉</div>
+          <div class="shop-item-name">MEDIC</div>
+          <div class="shop-item-desc">+3 HP/s regen · +20% XP</div>
+          <div class="shop-item-price">◆ 1500</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weapons -->
+    <div class="shop-category">
+      <div class="shop-category-title">⚔️ WEAPONS</div>
+      <div class="shop-items">
+        <div class="shop-item-card" data-item="shotgun" data-price="500">
+          <div class="shop-item-icon">🌊</div>
+          <div class="shop-item-name">SHOTGUN</div>
+          <div class="shop-item-desc">5‑pellet spread · crowd clear</div>
+          <div class="shop-item-price">◆ 500</div>
+        </div>
+        <div class="shop-item-card" data-item="sniper" data-price="1200">
+          <div class="shop-item-icon">🎯</div>
+          <div class="shop-item-name">SNIPER</div>
+          <div class="shop-item-desc">Piercing · 3× damage</div>
+          <div class="shop-item-price">◆ 1200</div>
+        </div>
+        <div class="shop-item-card" data-item="rocket" data-price="2000">
+          <div class="shop-item-icon">🚀</div>
+          <div class="shop-item-name">ROCKET</div>
+          <div class="shop-item-desc">Homing AoE explosions</div>
+          <div class="shop-item-price">◆ 2000</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upgrades -->
+    <div class="shop-category">
+      <div class="shop-category-title">⬆️ STAT UPGRADES</div>
+      <div class="shop-items">
+        <div class="shop-item-card" data-item="hp_upgrade" data-level="1" data-price="120">
+          <div class="shop-item-icon">❤️</div>
+          <div class="shop-item-name">VITAL SURGE</div>
+          <div class="shop-item-desc">+30 Max HP (stackable)</div>
+          <div class="shop-item-price">◆ 120</div>
+        </div>
+        <div class="shop-item-card" data-item="firerate_upgrade" data-level="1" data-price="100">
+          <div class="shop-item-icon">⚡</div>
+          <div class="shop-item-name">RAPID TRIGGER</div>
+          <div class="shop-item-desc">+25% fire rate (stackable)</div>
+          <div class="shop-item-price">◆ 100</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="shop-note">Click any item to open the full Diarite Shop — purchases persist and affect your gameplay!</div>
+</section>
+
+<!-- DAMAGE CALCULATOR -->
+<section id="damageCalc" class="section">
+  <div class="section-label">// DAMAGE CALCULATOR</div>
+  <h2 class="section-title">TEST YOUR <span class="accent">ARSENAL</span></h2>
+  <p class="section-desc">See how much damage each weapon deals to different enemies. Hover over weapons and enemies to preview damage values.</p>
+  <div class="damage-calculator">
+    <div class="damage-weapons">
+      <h3>🔥 WEAPONS</h3>
+      <div class="damage-weapons-grid" id="weaponSelector">
+        <div class="damage-weapon" data-weapon="basic" data-damage="15" data-firerate="0.55">
+          <span class="weapon-emoji">🔫</span>
+          <span class="weapon-name">Basic</span>
+          <span class="weapon-dmg">15 DMG</span>
+        </div>
+        <div class="damage-weapon" data-weapon="spread" data-damage="15" data-firerate="0.55" data-multishot="5">
+          <span class="weapon-emoji">🌊</span>
+          <span class="weapon-name">Spread</span>
+          <span class="weapon-dmg">15×5 DMG</span>
+        </div>
+        <div class="damage-weapon" data-weapon="sniper" data-damage="45" data-firerate="0.55">
+          <span class="weapon-emoji">🎯</span>
+          <span class="weapon-name">Sniper</span>
+          <span class="weapon-dmg">45 DMG</span>
+        </div>
+        <div class="damage-weapon" data-weapon="laser" data-damage="35" data-firerate="0.1" data-dps="true">
+          <span class="weapon-emoji">🔴</span>
+          <span class="weapon-name">Laser</span>
+          <span class="weapon-dmg">35 DPS</span>
+        </div>
+        <div class="damage-weapon" data-weapon="rocket" data-damage="60" data-firerate="0.55" data-aoe="true">
+          <span class="weapon-emoji">🚀</span>
+          <span class="weapon-name">Rocket</span>
+          <span class="weapon-dmg">60 + AoE</span>
+        </div>
+        <div class="damage-weapon" data-weapon="orbit" data-damage="25" data-firerate="0" data-passive="true">
+          <span class="weapon-emoji">🔮</span>
+          <span class="weapon-name">Orbit</span>
+          <span class="weapon-dmg">25 (contact)</span>
+        </div>
+      </div>
+    </div>
+    <div class="damage-upgrades">
+      <h3>⚡ UPGRADE MULTIPLIERS</h3>
+      <div class="upgrade-sliders">
+        <div class="upgrade-slider">
+          <label>🔥 Damage Multiplier</label>
+          <input type="range" id="dmgMulti" min="1" max="5" step="0.5" value="1">
+          <span id="dmgMultiVal">×1.0</span>
+        </div>
+        <div class="upgrade-slider">
+          <label>✨ Multi-Shot</label>
+          <input type="range" id="multiShot" min="1" max="5" step="1" value="1">
+          <span id="multiShotVal">1</span>
+        </div>
+      </div>
+    </div>
+    <div class="damage-results">
+      <h3>💥 DAMAGE PREVIEW</h3>
+      <div class="damage-table" id="damageTable"></div>
+    </div>
+    <div class="dps-calculator">
+      <h3>📊 DPS CALCULATOR</h3>
+      <div class="dps-stats" id="dpsStats">
+        <div class="dps-stat">
+          <span class="dps-label">Time to kill Standard:</span>
+          <span class="dps-value" id="ttkStandard">—</span>
+        </div>
+        <div class="dps-stat">
+          <span class="dps-label">Time to kill Elite:</span>
+          <span class="dps-value" id="ttkElite">—</span>
+        </div>
+        <div class="dps-stat">
+          <span class="dps-label">Time to kill Boss:</span>
+          <span class="dps-value" id="ttkBoss">—</span>
+        </div>
+        <div class="dps-stat">
+          <span class="dps-label">Shots to kill Standard:</span>
+          <span class="dps-value" id="shotsStandard">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TIPS SECTION -->
+<section id="tips" class="section">
+  <div class="section-label">// SURVIVAL GUIDE</div>
+  <h2 class="section-title">PRO <span class="accent">STRATEGIES</span></h2>
+  <p class="section-desc">Essential tips to push past your limits and survive the full 120 seconds.</p>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-number">01</div>
+      <h3>Keep Moving</h3>
+      <p>Standing still is a death sentence. Constant movement makes you harder to hit and lets you kite enemies into kill zones.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">02</div>
+      <h3>Prioritize Threats</h3>
+      <p>Runners first — they're fast and flanking. Then Splitters before they multiply. Elites last (but don't ignore them).</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">03</div>
+      <h3>Build Synergy</h3>
+      <p>Multi-Shot + Spread Shot = bullet hell. Damage + Fire Rate = boss melter. Speed + Orbit Shield = untouchable.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">04</div>
+      <h3>Collect XP Orbs</h3>
+      <p>Green orbs give XP. Level up faster = more upgrades = more power. Don't leave XP on the ground.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">05</div>
+      <h3>Save Your Health</h3>
+      <p>HP pickups heal 20 HP. Don't rush into danger to grab them — clear enemies first, then collect.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">06</div>
+      <h3>Boss Strategy</h3>
+      <p>Bosses spawn every ~60 seconds. Use open space. Never stop moving. Stack damage upgrades before the boss wave.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">07</div>
+      <h3>Combo Chain</h3>
+      <p>Kills within 2.5 seconds build your combo meter. Higher combos mean more style points — and bragging rights.</p>
+    </div>
+    <div class="tip-card">
+      <div class="tip-number">08</div>
+      <h3>Weapon Mastery</h3>
+      <p>Each weapon excels in different situations. Spread = crowds. Sniper = elites. Laser = sustained DPS. Rockets = AoE.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA PORTAL -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div class="cta-inner">
+    <div class="cta-label">READY TO FIGHT?</div>
+    <h2 class="cta-title">ENTER THE<br><span class="accent">ARENA</span></h2>
+    <p class="cta-desc">No downloads. No installs. Pure browser-based survival action.<br> Can you survive the full 2 minutes?</p>
+    <a href="Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/game.html" class="btn-primary btn-primary--xl">
+      <span class="btn-icon">▶</span>
+      PLAY ORBITAL BARRAGE
+    </a>
+    <div class="cta-controls-hint">
+      <span>⌨ WASD / Arrow Keys to move</span>
+      <span>•</span>
+      <span>🎯 Auto-attack enabled</span>
+      <span>•</span>
+      <span>⏱️ Survive 2 minutes</span>
+      <span>•</span>
+      <span>⬆️ Level up for upgrades</span>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <span class="logo-icon">⬡</span>
+      <span class="logo-text">ORBITAL<span class="logo-accent">BARRAGE</span></span>
+    </div>
+    <p class="footer-copy">A relentless browser-based survival shooter. Built with HTML5 Canvas.</p>
+    <p class="footer-copy">Wave defense • Rogue-like upgrades • Auto-targeting combat</p>
+  </div>
+</footer>
+
+<audio id="bgMusic" loop preload="auto">
+  <source src="/Roldan_Ramos---Survival-Defense/Assets_Portal/Portal_Sound/audley_fergine-adventure-stealth-loop-1-327730.mp3" type="audio/mpeg">
+</audio>
+
+<script src="Roldan_Ramos---Survival-Defense/Assets_Portal/Assets_Portal_Functions/script.js"></script>
+<script src="Roldan_Ramos---Survival-Defense/Assets_Portal/Assets_Portal_Functions/enemy-previews.js"></script>
+<script src="Roldan_Ramos---Survival-Defense/Assets_Portal/Assets_Portal_Functions/damage-calculator.js"></script>
+
+<script>
+  // --- SHOP INTEGRATION ---
+  function updatePortalDiarite() {
+    try {
+      const shopState = JSON.parse(localStorage.getItem('sdShop') || '{}');
+      const diarite = shopState.diarite || 0;
+      document.getElementById('portalDiariteAmount').innerText = diarite;
+    } catch(e) { document.getElementById('portalDiariteAmount').innerText = '0'; }
+  }
+  updatePortalDiarite();
+  // listen for changes (if shop is opened in popup and updates localStorage)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'sdShop') updatePortalDiarite();
+  });
+
+  const openShopBtn = document.getElementById('openShopBtn');
+  if (openShopBtn) {
+    openShopBtn.addEventListener('click', () => {
+      const shopWindow = window.open('Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/shop.html', 'DiariteShop', 'width=1100,height=720,resizable=yes');
+      if (shopWindow) {
+        shopWindow.addEventListener('load', () => {
+          const s = JSON.parse(localStorage.getItem('sdShop') || '{}');
+          shopWindow.postMessage({ type: 'shopInit', state: s }, '*');
+        });
+      }
+    });
+  }
+
+  // make all shop preview cards open the shop too (simpler UX)
+  document.querySelectorAll('.shop-item-card, .shop-currency-container .btn-open-shop').forEach(el => {
+    if (el === openShopBtn) return;
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openShopBtn.click();
+    });
+  });
+
+  // --- MUSIC CONTROLS (works with user gesture) ---
+  const bgMusic = document.getElementById('bgMusic');
+  const musicToggleBtn = document.getElementById('musicToggle');
+  const floatingBtn = document.getElementById('floatingMusicBtn');
+  let musicMuted = localStorage.getItem('musicMuted') === 'true';
+
+  function updateMusicUI() {
+    if (bgMusic.muted) {
+      musicToggleBtn.textContent = '🔇';
+      musicToggleBtn.classList.add('muted');
+      if (floatingBtn) floatingBtn.textContent = '🔇';
+    } else {
+      musicToggleBtn.textContent = '🎵';
+      musicToggleBtn.classList.remove('muted');
+      if (floatingBtn) floatingBtn.textContent = '🎵';
+    }
+  }
+
+  function setMusicMuted(muted) {
+    bgMusic.muted = muted;
+    localStorage.setItem('musicMuted', muted);
+    updateMusicUI();
+  }
+
+  // attempt to play on first user interaction
+  let musicStarted = false;
+  function startMusic() {
+    if (musicStarted) return;
+    bgMusic.volume = 0.4;
+    bgMusic.play().then(() => {
+      musicStarted = true;
+      setMusicMuted(musicMuted);
+    }).catch(() => {
+      // still muted, keep waiting
+    });
+  }
+  document.body.addEventListener('click', startMusic, { once: true });
+  document.body.addEventListener('touchstart', startMusic, { once: true });
+
+  if (musicToggleBtn) {
+    musicToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!musicStarted) startMusic();
+      setMusicMuted(!bgMusic.muted);
+    });
+  }
+  if (floatingBtn) {
+    floatingBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!musicStarted) startMusic();
+      setMusicMuted(!bgMusic.muted);
+    });
+  }
+
+  // initial UI sync
+  bgMusic.muted = musicMuted;
+  updateMusicUI();
+</script>
+
+</body>
+</html>

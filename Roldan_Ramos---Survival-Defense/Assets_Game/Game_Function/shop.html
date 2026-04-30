@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diarite Shop — Survival Defense</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#04080f; --surface:rgba(8,14,26,0.97); --border:rgba(80,180,255,0.12);
+      --hi:rgba(80,180,255,0.35); --accent:#60a5fa; --diarite:#a78bfa;
+      --green:#34d399; --red:#f87171; --orange:#fb923c; --yellow:#fbbf24;
+      --text:#e2e8f0; --muted:rgba(226,232,240,0.4);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);font-family:'Share Tech Mono',monospace;color:var(--text);min-height:100vh;overflow-x:hidden;}
+    body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.05) 2px,rgba(0,0,0,0.05) 4px);pointer-events:none;z-index:100;}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(96,165,250,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+
+    .shop-header{position:sticky;top:0;z-index:50;background:rgba(4,8,15,0.96);border-bottom:1px solid var(--hi);backdrop-filter:blur(12px);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;}
+    .header-left{display:flex;align-items:center;gap:14px;}
+    .shop-eyebrow{font-size:9px;letter-spacing:5px;color:var(--muted);font-family:'Orbitron',monospace;display:block;}
+    .shop-title{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:var(--accent);letter-spacing:4px;text-shadow:0 0 24px rgba(96,165,250,0.5);}
+    .diamond-logo{width:40px;height:40px;flex-shrink:0;}
+    .currency-display{display:flex;align-items:center;gap:10px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:6px;padding:9px 16px;}
+    .currency-icon{width:26px;height:26px;flex-shrink:0;}
+    .currency-label{font-size:9px;letter-spacing:3px;color:var(--muted);font-family:'Orbitron',monospace;}
+    .currency-amount{font-family:'Orbitron',monospace;font-size:18px;font-weight:800;color:var(--diarite);text-shadow:0 0 16px rgba(167,139,250,0.6);min-width:50px;text-align:right;transition:all 0.4s;}
+    .currency-amount.flash{color:#fff;text-shadow:0 0 30px rgba(167,139,250,1);}
+    .shop-body{max-width:1080px;margin:0 auto;padding:28px 20px 80px;}
+    .section-header{display:flex;align-items:center;gap:14px;margin-bottom:18px;margin-top:36px;}
+    .section-header:first-child{margin-top:0;}
+    .section-line{flex:1;height:1px;background:linear-gradient(90deg,var(--hi),transparent);}
+    .section-line.r{background:linear-gradient(270deg,var(--hi),transparent);}
+    .section-title{font-family:'Orbitron',monospace;font-size:11px;font-weight:700;letter-spacing:5px;color:var(--accent);}
+    .cards-grid{display:grid;gap:14px;}
+    .cols-2{grid-template-columns:repeat(2,1fr);}
+    .cols-5{grid-template-columns:repeat(5,1fr);}
+
+    /* ── Base card ── */
+    .shop-card{background:linear-gradient(160deg,rgba(12,20,36,0.98),rgba(6,10,20,0.99));border:1px solid var(--border);border-radius:8px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;cursor:pointer;transition:all 0.22s cubic-bezier(0.22,1,0.36,1);position:relative;overflow:hidden;user-select:none;}
+    .shop-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.22s;border-radius:8px;}
+    .shop-card.upgrade::before{background:radial-gradient(ellipse at 50% 0%,rgba(52,211,153,0.1),transparent 70%);}
+    .shop-card.weapon::before{background:radial-gradient(ellipse at 50% 0%,rgba(167,139,250,0.1),transparent 70%);}
+    .shop-card.character::before{background:radial-gradient(ellipse at 50% 0%,rgba(96,165,250,0.12),transparent 70%);}
+    .shop-card:hover:not(.maxed):not(.cant-afford):not(.active-char){border-color:var(--hi);transform:translateY(-3px);box-shadow:0 12px 40px rgba(96,165,250,0.1);}
+    .shop-card.upgrade:hover:not(.maxed){border-color:rgba(52,211,153,0.4);box-shadow:0 12px 40px rgba(52,211,153,0.08);}
+    .shop-card.weapon:hover:not(.owned){border-color:rgba(167,139,250,0.4);box-shadow:0 12px 40px rgba(167,139,250,0.1);}
+    .shop-card.character:hover:not(.cant-afford){border-color:rgba(96,165,250,0.5);box-shadow:0 12px 40px rgba(96,165,250,0.12);}
+    .shop-card:hover::before{opacity:1;}
+    .shop-card.owned{border-color:rgba(52,211,153,0.3);background:linear-gradient(160deg,rgba(12,30,24,0.98),rgba(6,16,12,0.99));}
+    .shop-card.maxed{border-color:rgba(251,191,36,0.3);cursor:default;}
+    .shop-card.cant-afford{opacity:0.5;cursor:not-allowed;}
+    .shop-card.active-char{border-color:rgba(96,165,250,0.7);background:linear-gradient(160deg,rgba(10,25,50,0.99),rgba(5,12,28,0.99));box-shadow:0 0 30px rgba(96,165,250,0.2);cursor:default;}
+    .shop-card.char-owned:not(.active-char){border-color:rgba(52,211,153,0.3);background:linear-gradient(160deg,rgba(12,30,24,0.98),rgba(6,16,12,0.99));}
+    @keyframes buyFlash{0%{box-shadow:0 0 0 0 rgba(167,139,250,0.9);}50%{box-shadow:0 0 40px 12px rgba(167,139,250,0.4);}100%{box-shadow:0 0 0 0 rgba(167,139,250,0);}}
+    .shop-card.buying{animation:buyFlash 0.5s ease;}
+
+    /* ── Badges ── */
+    .badge{position:absolute;top:8px;right:8px;font-size:8px;letter-spacing:2px;font-family:'Orbitron',monospace;padding:2px 7px;border-radius:2px;display:none;}
+    .owned-badge{background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.35);color:var(--green);}
+    .maxed-badge{background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.35);color:var(--yellow);}
+    .free-badge{background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.35);color:var(--accent);display:block;}
+    .active-badge{background:rgba(96,165,250,0.2);border:1px solid rgba(96,165,250,0.6);color:var(--accent);}
+    .shop-card.owned .owned-badge,.shop-card.maxed .maxed-badge{display:block;}
+    .shop-card.active-char .active-badge{display:block;}
+    .shop-card.active-char .owned-badge{display:none;}
+
+    /* ── Card content ── */
+    .card-svg{width:64px;height:64px;margin-bottom:10px;}
+    .card-emoji{font-size:48px;margin-bottom:10px;line-height:1;filter:drop-shadow(0 0 8px rgba(96,165,250,0.4));}
+    .card-name{font-family:'Orbitron',monospace;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--text);margin-bottom:5px;}
+    .card-desc{font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:12px;flex:1;}
+    .char-stats{display:flex;flex-direction:column;gap:4px;width:100%;margin-bottom:12px;}
+    .char-stat-row{display:flex;align-items:center;gap:6px;}
+    .char-stat-key{font-size:8px;color:var(--muted);width:28px;text-align:right;font-family:'Orbitron',monospace;letter-spacing:1px;flex-shrink:0;}
+    .char-stat-track{flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden;}
+    .char-stat-fill{height:100%;border-radius:2px;}
+    .fill-spd{background:#34d399;}
+    .fill-dmg{background:#f87171;}
+    .fill-hp{background:#60a5fa;}
+
+    /* ── Level dots ── */
+    .level-dots{display:flex;justify-content:center;gap:4px;margin-bottom:12px;}
+    .level-dot{width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);transition:all 0.3s;}
+    .level-dot.filled{background:var(--green);border-color:rgba(52,211,153,0.5);box-shadow:0 0 6px rgba(52,211,153,0.5);}
+
+    /* ── Price tag ── */
+    .price-tag{display:flex;align-items:center;gap:6px;padding:7px 12px;border-radius:4px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.25);transition:all 0.2s;}
+    .shop-card:hover:not(.maxed):not(.cant-afford):not(.active-char) .price-tag{background:rgba(167,139,250,0.2);border-color:rgba(167,139,250,0.5);}
+    .price-icon{width:13px;height:13px;}
+    .price-val{font-family:'Orbitron',monospace;font-size:12px;font-weight:700;color:var(--diarite);}
+    .shop-card.owned .price-tag,.shop-card.char-owned .price-tag{background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);}
+    .shop-card.owned .price-val,.shop-card.char-owned .price-val{color:var(--green);font-size:10px;letter-spacing:1px;}
+    .shop-card.active-char .price-tag{background:rgba(96,165,250,0.1);border-color:rgba(96,165,250,0.4);}
+    .shop-card.active-char .price-val{color:var(--accent);font-size:10px;letter-spacing:1px;}
+    .shop-card.maxed .price-tag{background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);}
+    .shop-card.maxed .price-val{color:var(--yellow);font-size:10px;letter-spacing:1px;}
+    .free-price{background:rgba(96,165,250,0.08);border-color:rgba(96,165,250,0.25);}
+    .free-price .price-val{color:var(--accent);}
+
+    /* ── Toast ── */
+    #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:rgba(8,14,26,0.97);border:1px solid var(--hi);border-radius:6px;padding:11px 24px;font-family:'Orbitron',monospace;font-size:10px;letter-spacing:2px;color:var(--text);z-index:200;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),opacity 0.35s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,0.5);}
+    #toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+    #toast.ok{border-color:rgba(52,211,153,0.5);color:var(--green);}
+    #toast.err{border-color:rgba(248,113,113,0.5);color:var(--red);}
+
+    .close-btn{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;padding:8px 16px;background:transparent;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;transition:all 0.2s;}
+    .close-btn:hover{border-color:var(--red);color:var(--red);}
+    .footnote{text-align:center;margin-top:36px;font-size:10px;color:rgba(226,232,240,0.18);letter-spacing:2px;}
+
+    @media(max-width:900px){.cols-5{grid-template-columns:repeat(3,1fr);}.cols-2{grid-template-columns:1fr;}}
+    @media(max-width:600px){.cols-5{grid-template-columns:repeat(2,1fr);}.shop-title{font-size:15px;}}
+  </style>
+</head>
+<body>
+
+<header class="shop-header">
+  <div class="header-left">
+    <svg class="diamond-logo" viewBox="0 0 40 40" fill="none">
+      <polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="rgba(167,139,250,0.1)" stroke="rgba(167,139,250,0.55)" stroke-width="1.4"/>
+      <polygon points="20,7 31,13 31,27 20,33 9,27 9,13" fill="rgba(167,139,250,0.06)" stroke="rgba(167,139,250,0.25)" stroke-width="0.8"/>
+      <line x1="20" y1="2" x2="20" y2="38" stroke="rgba(167,139,250,0.22)" stroke-width="0.7"/>
+      <line x1="4" y1="11" x2="36" y2="11" stroke="rgba(167,139,250,0.22)" stroke-width="0.7"/>
+      <line x1="4" y1="29" x2="36" y2="29" stroke="rgba(167,139,250,0.22)" stroke-width="0.7"/>
+      <circle cx="20" cy="20" r="3.5" fill="rgba(167,139,250,0.85)" filter="url(#g)"/>
+      <defs><filter id="g"><feGaussianBlur stdDeviation="1.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+    </svg>
+    <div>
+      <span class="shop-eyebrow">— SURVIVAL DEFENSE —</span>
+      <span class="shop-title">DIARITE SHOP</span>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div class="currency-display">
+      <svg class="currency-icon" viewBox="0 0 26 26" fill="none">
+        <polygon points="13,1 23,7 23,19 13,25 3,19 3,7" fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.65)" stroke-width="1.3"/>
+        <line x1="13" y1="1" x2="13" y2="25" stroke="rgba(167,139,250,0.3)" stroke-width="0.7"/>
+        <line x1="3" y1="7" x2="23" y2="7" stroke="rgba(167,139,250,0.3)" stroke-width="0.7"/>
+        <line x1="3" y1="19" x2="23" y2="19" stroke="rgba(167,139,250,0.3)" stroke-width="0.7"/>
+        <circle cx="13" cy="13" r="2.2" fill="rgba(167,139,250,0.88)"/>
+      </svg>
+      <div>
+        <div class="currency-label">DIARITE</div>
+        <div class="currency-amount" id="currencyDisplay">0</div>
+      </div>
+    </div>
+    <button class="close-btn" onclick="window.close()">✕ CLOSE</button>
+  </div>
+</header>
+
+<main class="shop-body">
+
+  <!-- ══ CHARACTERS ══ -->
+  <div class="section-header">
+    <div class="section-line"></div>
+    <span class="section-title">⚡ OPERATIVES</span>
+    <div class="section-line r"></div>
+  </div>
+
+  <div class="cards-grid cols-5" id="charGrid"></div>
+
+  <!-- ══ UPGRADES ══ -->
+  <div class="section-header">
+    <div class="section-line"></div>
+    <span class="section-title">⬡ UPGRADES</span>
+    <div class="section-line r"></div>
+  </div>
+
+  <div class="cards-grid cols-2">
+    <div class="shop-card upgrade" data-id="hp_upgrade" data-max-level="5" onclick="purchase(this)">
+      <span class="badge owned-badge">OWNED</span>
+      <span class="badge maxed-badge">MAX LEVEL</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(52,211,153,0.07)" stroke="rgba(52,211,153,0.18)" stroke-width="1.5"/>
+        <path d="M32 46 C32 46 13 33 13 21 C13 15.5 17.5 11 23 11 C26.8 11 30 13.2 32 15.8 C34 13.2 37.2 11 41 11 C46.5 11 51 15.5 51 21 C51 33 32 46 32 46Z" fill="rgba(52,211,153,0.65)" stroke="rgba(52,211,153,0.9)" stroke-width="1.5"/>
+        <text x="32" y="30" text-anchor="middle" font-size="12" fill="rgba(255,255,255,0.9)" font-family="Orbitron" font-weight="900">HP</text>
+      </svg>
+      <div class="card-name">VITAL SURGE</div>
+      <div class="card-desc">+30 Max HP per level.<br>Instantly heals the added amount on purchase.</div>
+      <div class="level-dots" id="hp_upgrade_dots">
+        <div class="level-dot"></div><div class="level-dot"></div><div class="level-dot"></div><div class="level-dot"></div><div class="level-dot"></div>
+      </div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="hp_upgrade_price">120</span>
+      </div>
+    </div>
+
+    <div class="shop-card upgrade" data-id="firerate_upgrade" data-max-level="5" onclick="purchase(this)">
+      <span class="badge owned-badge">OWNED</span>
+      <span class="badge maxed-badge">MAX LEVEL</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(251,191,36,0.07)" stroke="rgba(251,191,36,0.18)" stroke-width="1.5"/>
+        <path d="M38 11 L22 34 L31 34 L25 53 L44 30 L35 30 Z" fill="rgba(251,191,36,0.75)" stroke="rgba(251,191,36,0.95)" stroke-width="1.5" stroke-linejoin="round"/>
+      </svg>
+      <div class="card-name">RAPID TRIGGER</div>
+      <div class="card-desc">+25% fire rate per level.<br>Stack 5× for an unstoppable bullet storm.</div>
+      <div class="level-dots" id="firerate_upgrade_dots">
+        <div class="level-dot"></div><div class="level-dot"></div><div class="level-dot"></div><div class="level-dot"></div><div class="level-dot"></div>
+      </div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="firerate_upgrade_price">100</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WEAPONS ══ -->
+  <div class="section-header">
+    <div class="section-line"></div>
+    <span class="section-title">⚔ WEAPONS</span>
+    <div class="section-line r"></div>
+  </div>
+
+  <div class="cards-grid cols-5">
+    <div class="shop-card weapon" data-id="pistol" data-type="weapon" onclick="purchase(this)">
+      <span class="badge owned-badge">EQUIPPED</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(96,165,250,0.06)" stroke="rgba(96,165,250,0.14)" stroke-width="1"/>
+        <rect x="16" y="26" width="28" height="10" rx="2" fill="rgba(96,165,250,0.65)" stroke="rgba(96,165,250,0.88)" stroke-width="1.2"/>
+        <rect x="36" y="22" width="8" height="5" rx="1" fill="rgba(96,165,250,0.85)"/>
+        <rect x="44" y="27" width="6" height="3" rx="1" fill="rgba(96,165,250,0.95)"/>
+        <rect x="22" y="36" width="9" height="9" rx="2" fill="rgba(96,165,250,0.45)" stroke="rgba(96,165,250,0.6)" stroke-width="1"/>
+        <circle cx="51" cy="28.5" r="1.8" fill="rgba(255,255,255,0.35)"/>
+      </svg>
+      <div class="card-name">PISTOL</div>
+      <div class="card-desc">Balanced sidearm. Reliable in all situations.</div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="pistol_price">200</span>
+      </div>
+    </div>
+
+    <div class="shop-card weapon" data-id="shotgun" data-type="weapon" onclick="purchase(this)">
+      <span class="badge owned-badge">EQUIPPED</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(251,146,60,0.06)" stroke="rgba(251,146,60,0.14)" stroke-width="1"/>
+        <rect x="10" y="27" width="38" height="5" rx="1.5" fill="rgba(251,146,60,0.65)" stroke="rgba(251,146,60,0.88)" stroke-width="1.2"/>
+        <rect x="10" y="32" width="38" height="5" rx="1.5" fill="rgba(251,146,60,0.5)" stroke="rgba(251,146,60,0.7)" stroke-width="1"/>
+        <rect x="20" y="37" width="11" height="8" rx="2" fill="rgba(251,146,60,0.45)"/>
+        <circle cx="50" cy="27" r="2" fill="rgba(251,146,60,0.95)"/>
+        <circle cx="50" cy="32" r="2" fill="rgba(251,146,60,0.95)"/>
+        <circle cx="50" cy="37" r="2" fill="rgba(251,146,60,0.95)"/>
+        <circle cx="54" cy="29.5" r="1.4" fill="rgba(255,255,255,0.3)"/>
+        <circle cx="54" cy="34.5" r="1.4" fill="rgba(255,255,255,0.3)"/>
+      </svg>
+      <div class="card-name">SHOTGUN</div>
+      <div class="card-desc">5-pellet spread. Shreds crowds at close range.</div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="shotgun_price">500</span>
+      </div>
+    </div>
+
+    <div class="shop-card weapon" data-id="bow" data-type="weapon" onclick="purchase(this)">
+      <span class="badge owned-badge">EQUIPPED</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.14)" stroke-width="1"/>
+        <path d="M17 13 Q7 32 17 51" stroke="rgba(52,211,153,0.88)" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <line x1="17" y1="13" x2="17" y2="51" stroke="rgba(52,211,153,0.35)" stroke-width="1"/>
+        <line x1="17" y1="32" x2="50" y2="32" stroke="rgba(52,211,153,0.75)" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <polygon points="50,32 43,28 43,36" fill="rgba(52,211,153,0.95)"/>
+        <path d="M17 32 L12 27 M17 32 L12 37" stroke="rgba(52,211,153,0.55)" stroke-width="1.5"/>
+        <circle cx="17" cy="21" r="1.8" fill="rgba(52,211,153,0.5)"/>
+        <circle cx="17" cy="43" r="1.8" fill="rgba(52,211,153,0.5)"/>
+      </svg>
+      <div class="card-name">BOW</div>
+      <div class="card-desc">Silent piercing arrows. Passes through enemies.</div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="bow_price">800</span>
+      </div>
+    </div>
+
+    <div class="shop-card weapon" data-id="sniper" data-type="weapon" onclick="purchase(this)">
+      <span class="badge owned-badge">EQUIPPED</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.14)" stroke-width="1"/>
+        <rect x="8" y="30" width="44" height="5" rx="2" fill="rgba(251,191,36,0.65)" stroke="rgba(251,191,36,0.88)" stroke-width="1.2"/>
+        <rect x="22" y="23" width="16" height="8" rx="2" fill="rgba(251,191,36,0.5)" stroke="rgba(251,191,36,0.7)" stroke-width="1"/>
+        <circle cx="30" cy="27" r="3.2" fill="rgba(251,191,36,0.88)"/>
+        <circle cx="30" cy="27" r="1.5" fill="rgba(255,255,255,0.4)"/>
+        <rect x="8" y="30" width="11" height="8" rx="2" fill="rgba(251,191,36,0.4)"/>
+        <rect x="52" y="31" width="5" height="3" rx="1" fill="rgba(251,191,36,0.95)"/>
+        <line x1="20" y1="35" x2="16" y2="43" stroke="rgba(251,191,36,0.45)" stroke-width="1.5"/>
+        <line x1="26" y1="35" x2="30" y2="43" stroke="rgba(251,191,36,0.45)" stroke-width="1.5"/>
+      </svg>
+      <div class="card-name">SNIPER</div>
+      <div class="card-desc">Piercing precision shot. 3× damage per hit.</div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="sniper_price">1200</span>
+      </div>
+    </div>
+
+    <div class="shop-card weapon" data-id="rocket" data-type="weapon" onclick="purchase(this)">
+      <span class="badge owned-badge">EQUIPPED</span>
+      <svg class="card-svg" viewBox="0 0 64 64" fill="none">
+        <circle cx="32" cy="32" r="28" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.14)" stroke-width="1"/>
+        <ellipse cx="32" cy="32" rx="17" ry="7" fill="rgba(248,113,113,0.65)" stroke="rgba(248,113,113,0.88)" stroke-width="1.2"/>
+        <polygon points="49,32 43,27.5 43,36.5" fill="rgba(255,220,80,0.9)"/>
+        <polygon points="15,32 9,26 15,29" fill="rgba(248,113,113,0.5)"/>
+        <polygon points="15,32 9,38 15,35" fill="rgba(248,113,113,0.5)"/>
+        <path d="M15 32 Q7 32 9 27 Q5 32 9 37 Q7 32 15 32" fill="rgba(251,191,36,0.7)"/>
+        <circle cx="9" cy="32" r="3" fill="rgba(255,100,30,0.9)"/>
+        <circle cx="37" cy="32" r="3.2" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.28)" stroke-width="1"/>
+      </svg>
+      <div class="card-name">ROCKET</div>
+      <div class="card-desc">Homing rockets with AoE explosion. The big boy.</div>
+      <div class="price-tag">
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val" id="rocket_price">2000</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote">DIARITE EARNED BY DEFEATING ENEMIES · SOLDIER IS FREE · UPGRADES PERSIST ACROSS RUNS</div>
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ── Character definitions ──
+const CHARACTERS = [
+  { id:'soldier',  icon:'🔫', name:'SOLDIER',  desc:'Balanced operative. No weaknesses.',          badge:'FREE',    badgeCls:'blue',   spd:65, dmg:65, hp:65,  price:0    },
+  { id:'ninja',    icon:'🗡️', name:'NINJA',    desc:'+15% spd · +20% fire rate · -10% dmg',       badge:'AGILE',   badgeCls:'green',  spd:85, dmg:52, hp:55,  price:800  },
+  { id:'heavy',    icon:'🛡️', name:'HEAVY',    desc:'+30 HP · +20% dmg · -15% speed',             badge:'TANK',    badgeCls:'red',    spd:42, dmg:80, hp:95,  price:1000 },
+  { id:'assassin', icon:'🔪', name:'ASSASSIN', desc:'+25% dmg · +10% spd · -15% fire rate',       badge:'BURST',   badgeCls:'gold',   spd:75, dmg:90, hp:50,  price:1200 },
+  { id:'medic',    icon:'💉', name:'MEDIC',    desc:'+3 HP/sec regen · +20% XP gain',             badge:'SUPPORT', badgeCls:'purple', spd:60, dmg:60, hp:75,  price:1500 },
+];
+
+const BADGE_COLORS = {
+  blue:   'rgba(96,165,250,0.15)',   green:  'rgba(52,211,153,0.15)',
+  red:    'rgba(248,113,113,0.15)',  gold:   'rgba(251,191,36,0.15)',
+  purple: 'rgba(129,140,248,0.15)',
+};
+const BADGE_BORDERS = {
+  blue:   'rgba(96,165,250,0.4)',    green:  'rgba(52,211,153,0.4)',
+  red:    'rgba(248,113,113,0.4)',   gold:   'rgba(251,191,36,0.4)',
+  purple: 'rgba(129,140,248,0.4)',
+};
+const BADGE_TEXT = {
+  blue:'#60a5fa', green:'#34d399', red:'#f87171', gold:'#fbbf24', purple:'#818cf8',
+};
+
+// ── Price tables ──
+const UPGRADE_PRICES = {
+  hp_upgrade:       [120, 200, 300, 450, 650],
+  firerate_upgrade: [100, 180, 280, 420, 600],
+};
+const WEAPON_PRICES = { pistol:200, shotgun:500, bow:800, sniper:1200, rocket:2000 };
+
+// ── State ──
+function loadState() {
+  try { const r = localStorage.getItem('sdShop'); if(r) return JSON.parse(r); } catch(e){}
+  return {
+    diarite: 0,
+    upgrades: { hp_upgrade:0, firerate_upgrade:0 },
+    weapons:  { pistol:false, shotgun:false, bow:false, sniper:false, rocket:false },
+    equippedWeapon: null,
+    characters: { soldier:true },   // soldier always unlocked
+    equippedCharacter: 'soldier',
+  };
+}
+
+function saveState(s) {
+  // Ensure soldier is always unlocked
+  if (!s.characters) s.characters = {};
+  s.characters.soldier = true;
+  if (!s.equippedCharacter) s.equippedCharacter = 'soldier';
+  try { localStorage.setItem('sdShop', JSON.stringify(s)); } catch(e){}
+  if (window.opener && !window.opener.closed)
+    window.opener.postMessage({ type:'shopUpdate', state:s }, '*');
+}
+
+let S = loadState();
+// Migrate old saves that don't have characters key
+if (!S.characters) { S.characters = { soldier:true }; S.equippedCharacter = 'soldier'; saveState(S); }
+if (!S.characters.soldier) { S.characters.soldier = true; saveState(S); }
+
+// ── Build character grid ──
+function buildCharGrid() {
+  const grid = document.getElementById('charGrid');
+  grid.innerHTML = '';
+  CHARACTERS.forEach(ch => {
+    const owned  = !!S.characters[ch.id];
+    const active = S.equippedCharacter === ch.id;
+    const free   = ch.price === 0;
+
+    const card = document.createElement('div');
+    card.className = 'shop-card character' +
+      (active ? ' active-char' : '') +
+      (owned && !active ? ' char-owned' : '') +
+      (!owned && S.diarite < ch.price ? ' cant-afford' : '');
+    card.dataset.id = ch.id;
+    card.dataset.type = 'character';
+    card.onclick = () => purchaseChar(ch.id);
+
+    // Active badge
+    const activeBadge = document.createElement('span');
+    activeBadge.className = 'badge active-badge';
+    activeBadge.textContent = '✓ ACTIVE';
+    card.appendChild(activeBadge);
+
+    // Owned badge (shows when owned but not active)
+    const ownedBadge = document.createElement('span');
+    ownedBadge.className = 'badge owned-badge';
+    ownedBadge.textContent = 'OWNED';
+    card.appendChild(ownedBadge);
+    if (owned && !active) ownedBadge.style.display = 'block';
+
+    // Emoji
+    const emoji = document.createElement('div');
+    emoji.className = 'card-emoji';
+    emoji.textContent = ch.icon;
+    card.appendChild(emoji);
+
+    // Name
+    const name = document.createElement('div');
+    name.className = 'card-name';
+    name.textContent = ch.name;
+    card.appendChild(name);
+
+    // Desc
+    const desc = document.createElement('div');
+    desc.className = 'card-desc';
+    desc.textContent = ch.desc;
+    card.appendChild(desc);
+
+    // Stat bars
+    const stats = document.createElement('div');
+    stats.className = 'char-stats';
+    [['SPD', ch.spd, 'fill-spd'], ['DMG', ch.dmg, 'fill-dmg'], ['HP', ch.hp, 'fill-hp']].forEach(([key, val, cls]) => {
+      stats.innerHTML += `
+        <div class="char-stat-row">
+          <span class="char-stat-key">${key}</span>
+          <div class="char-stat-track"><div class="char-stat-fill ${cls}" style="width:${val}%"></div></div>
+        </div>`;
+    });
+    card.appendChild(stats);
+
+    // Badge pill
+    const pill = document.createElement('div');
+    pill.style.cssText = `font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;padding:3px 8px;border-radius:3px;margin-bottom:10px;
+      background:${BADGE_COLORS[ch.badgeCls]};border:1px solid ${BADGE_BORDERS[ch.badgeCls]};color:${BADGE_TEXT[ch.badgeCls]};`;
+    pill.textContent = ch.badge;
+    card.appendChild(pill);
+
+    // Price tag
+    const priceTag = document.createElement('div');
+    priceTag.className = 'price-tag' + (free ? ' free-price' : '');
+    if (active) {
+      priceTag.innerHTML = `<span class="price-val" style="color:var(--accent);font-size:10px;letter-spacing:1px;">SELECTED</span>`;
+    } else if (owned) {
+      priceTag.innerHTML = `<span class="price-val" style="color:var(--green);font-size:10px;letter-spacing:1px;">EQUIP</span>`;
+    } else if (free) {
+      priceTag.innerHTML = `<span class="price-val" style="color:var(--accent);">FREE</span>`;
+    } else {
+      priceTag.innerHTML = `
+        <svg class="price-icon" viewBox="0 0 14 14"><polygon points="7,0.5 12,3.5 12,10.5 7,13.5 2,10.5 2,3.5" fill="rgba(167,139,250,0.2)" stroke="rgba(167,139,250,0.75)" stroke-width="1"/><circle cx="7" cy="7" r="1.7" fill="rgba(167,139,250,0.88)"/></svg>
+        <span class="price-val">${ch.price}</span>`;
+    }
+    card.appendChild(priceTag);
+
+    grid.appendChild(card);
+  });
+}
+
+// ── Character purchase / equip ──
+function purchaseChar(id) {
+  const ch = CHARACTERS.find(c => c.id === id);
+  if (!ch) return;
+
+  if (S.equippedCharacter === id) return; // already active
+
+  if (S.characters[id]) {
+    // Already owned — just equip
+    S.equippedCharacter = id;
+    saveState(S);
+    render();
+    toast(`${ch.name} equipped`, 'ok');
+    return;
+  }
+
+  if (ch.price === 0) {
+    // Free (soldier)
+    S.characters[id] = true;
+    S.equippedCharacter = id;
+    saveState(S);
+    render();
+    return;
+  }
+
+  if (S.diarite < ch.price) {
+    toast(`Need ${ch.price - S.diarite} more Diarite`, 'err');
+    return;
+  }
+
+  S.diarite -= ch.price;
+  S.characters[id] = true;
+  S.equippedCharacter = id;
+  flashCurrency();
+  saveState(S);
+  render();
+  toast(`${ch.name} unlocked & equipped!`, 'ok');
+}
+
+// ── Render all ──
+function render() {
+  document.getElementById('currencyDisplay').textContent = S.diarite;
+  buildCharGrid();
+  ['hp_upgrade','firerate_upgrade'].forEach(renderUpgrade);
+  Object.keys(WEAPON_PRICES).forEach(renderWeapon);
+}
+
+function renderUpgrade(id) {
+  const card = document.querySelector(`[data-id="${id}"]`);
+  const dots  = document.getElementById(id+'_dots');
+  const priceEl = document.getElementById(id+'_price');
+  const lv = S.upgrades[id] || 0, max = +card.dataset.maxLevel;
+  Array.from(dots.children).forEach((d,i) => d.classList.toggle('filled', i < lv));
+  card.classList.remove('maxed','cant-afford');
+  if (lv >= max) { card.classList.add('maxed'); priceEl.textContent = 'MAX'; }
+  else { const p = UPGRADE_PRICES[id][lv]; priceEl.textContent = p; if (S.diarite < p) card.classList.add('cant-afford'); }
+}
+
+function renderWeapon(id) {
+  const card = document.querySelector(`[data-id="${id}"]`);
+  const badge = card.querySelector('.owned-badge');
+  const priceEl = document.getElementById(id+'_price');
+  card.classList.remove('owned','cant-afford');
+  if (S.weapons[id]) {
+    card.classList.add('owned');
+    badge.textContent = S.equippedWeapon === id ? '✓ EQUIPPED' : 'OWNED';
+    priceEl.textContent = S.equippedWeapon === id ? 'EQUIPPED' : 'EQUIP';
+  } else {
+    const p = WEAPON_PRICES[id];
+    priceEl.textContent = p;
+    if (S.diarite < p) card.classList.add('cant-afford');
+  }
+}
+
+function purchase(card) {
+  const id = card.dataset.id, type = card.dataset.type;
+  if (card.classList.contains('maxed')) return;
+  if (type === 'weapon') doWeapon(card, id);
+  else if (type === 'character') purchaseChar(id);
+  else doUpgrade(card, id);
+}
+
+function doUpgrade(card, id) {
+  const lv = S.upgrades[id] || 0, max = +card.dataset.maxLevel;
+  if (lv >= max) return;
+  const price = UPGRADE_PRICES[id][lv];
+  if (S.diarite < price) { toast(`Need ${price - S.diarite} more Diarite`, 'err'); return; }
+  S.diarite -= price; S.upgrades[id] = lv + 1;
+  card.classList.add('buying'); setTimeout(() => card.classList.remove('buying'), 500);
+  flashCurrency(); saveState(S); render();
+  const names = { hp_upgrade:'Vital Surge', firerate_upgrade:'Rapid Trigger' };
+  toast(`${names[id]} → Level ${S.upgrades[id]}`, 'ok');
+}
+
+function doWeapon(card, id) {
+  if (S.weapons[id]) { S.equippedWeapon = id; saveState(S); render(); toast(`${id.toUpperCase()} equipped`, 'ok'); return; }
+  const price = WEAPON_PRICES[id];
+  if (S.diarite < price) { toast(`Need ${price - S.diarite} more Diarite`, 'err'); return; }
+  S.diarite -= price; S.weapons[id] = true; S.equippedWeapon = id;
+  card.classList.add('buying'); setTimeout(() => card.classList.remove('buying'), 500);
+  flashCurrency(); saveState(S); render();
+  toast(`${id.toUpperCase()} purchased & equipped`, 'ok');
+}
+
+function flashCurrency() {
+  const el = document.getElementById('currencyDisplay');
+  el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 350);
+}
+
+let _t = null;
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(_t); _t = setTimeout(() => el.className = '', 2800);
+}
+
+window.addEventListener('message', e => {
+  if (!e.data) return;
+  if (e.data.type === 'shopInit')    { S = e.data.state; if(!S.characters){S.characters={soldier:true};S.equippedCharacter='soldier';} render(); }
+  if (e.data.type === 'addDiarite') { S.diarite = (S.diarite||0) + e.data.amount; saveState(S); render(); }
+  if (e.data.type === 'syncState')  { S = e.data.state; render(); }
+});
+
+render();
+</script>
+</body>
+</html>
