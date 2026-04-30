@@ -334,3 +334,228 @@ if (previewCanvas) {
     });
   }
 }
+
+// ========== ENGAGEMENT OVERLAY ==========
+(function addLivelyFeatures() {
+  // ---- Live stats panel (injected) ----
+  const panel = document.createElement('div');
+  panel.className = 'live-panel';
+  panel.innerHTML = `
+    <div class="live-threat">
+      <span class="threat-label">🌍 GLOBAL THREAT LEVEL</span>
+      <div class="threat-bar"><div class="threat-fill" id="threatFill" style="width:0%"></div></div>
+      <span class="threat-percent" id="threatPercent">0%</span>
+    </div>
+    <div class="live-stats">
+      <div class="live-stat"><span>🔥 GLOBAL KILLS</span><span id="globalKills">0</span></div>
+      <div class="live-stat"><span>⚡ ACTIVE OPERATIVES</span><span id="activeOps">1.2k</span></div>
+      <div class="live-stat"><span>💀 CURRENT WAVE</span><span id="liveWave">∞</span></div>
+    </div>
+    <div class="live-spotlight" id="liveSpotlight">
+      <div class="spotlight-icon">🔫</div>
+      <div class="spotlight-text">
+        <span class="spotlight-label">FEATURED WEAPON</span>
+        <span class="spotlight-value" id="spotlightWeapon">Basic Rifle</span>
+      </div>
+    </div>
+    <div class="live-tip" id="liveTip">💡 Tip: Keep moving – standing still is death</div>
+  `;
+  document.body.appendChild(panel);
+
+  // ---- Threat meter animation (simulated) ----
+  let threat = 0;
+  setInterval(() => {
+    threat = (threat + Math.random() * 8) % 100;
+    const fill = document.getElementById('threatFill');
+    const percent = document.getElementById('threatPercent');
+    if (fill && percent) {
+      fill.style.width = threat + '%';
+      percent.innerText = Math.floor(threat) + '%';
+      fill.style.background = threat > 70 ? '#f87171' : threat > 30 ? '#fb923c' : '#4ade80';
+    }
+  }, 1800);
+
+  // ---- Global kills counter (fake but addictive) ----
+  let kills = 12740;
+  setInterval(() => {
+    kills += Math.floor(Math.random() * 23) + 5;
+    const killsEl = document.getElementById('globalKills');
+    if (killsEl) killsEl.innerText = kills.toLocaleString();
+  }, 1100);
+
+  // ---- Rotating weapon spotlight ----
+  const weapons = [
+    { icon: '🔫', name: 'Basic Rifle' },
+    { icon: '🌊', name: 'Spread Shot' },
+    { icon: '🎯', name: 'Sniper Rifle' },
+    { icon: '🚀', name: 'Rocket Launcher' },
+    { icon: '🔮', name: 'Orbit Shield' },
+    { icon: '🔴', name: 'Laser Beam' }
+  ];
+  let wIdx = 0;
+  setInterval(() => {
+    wIdx = (wIdx + 1) % weapons.length;
+    const iconEl = document.querySelector('.spotlight-icon');
+    const nameEl = document.getElementById('spotlightWeapon');
+    if (iconEl && nameEl) {
+      iconEl.innerText = weapons[wIdx].icon;
+      nameEl.innerText = weapons[wIdx].name;
+      // add a tiny bounce
+      iconEl.style.transform = 'scale(1.2)';
+      setTimeout(() => { if(iconEl) iconEl.style.transform = ''; }, 200);
+    }
+  }, 3200);
+
+  // ---- Rotating tips ----
+  const tips = [
+    '💡 Kill Splitters first – they multiply!',
+    '⚡ Level up before the boss wave (every ~60s)',
+    '🎯 Multi‑Shot + Spread Shot = bullet hell',
+    '🛡️ Orbit Shield lets you tank while moving',
+    '❤️ HP pickups heal 20 HP – don’t waste them',
+    '🔥 Keep the combo alive within 2.5 seconds'
+  ];
+  let tipIdx = 0;
+  setInterval(() => {
+    tipIdx = (tipIdx + 1) % tips.length;
+    const tipEl = document.getElementById('liveTip');
+    if (tipEl) tipEl.innerText = tips[tipIdx];
+  }, 5000);
+
+  // ---- Mouse trail particles ----
+  let mouseX = 0, mouseY = 0;
+  let particles = [];
+  function createTrailParticle(x, y) {
+    particles.push({
+      x, y, life: 1, vx: (Math.random() - 0.5) * 1.5,
+      vy: (Math.random() - 0.5) * 1.5 - 1,
+      size: Math.random() * 5 + 2,
+      color: `hsl(${Math.random() * 60 + 200}, 70%, 65%)`
+    });
+  }
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    for (let i = 0; i < 2; i++) createTrailParticle(mouseX, mouseY);
+  });
+  function drawTrail() {
+    const canvas = document.getElementById('bgCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    // we don't want to clear the main bg – we'll composite over it
+    for (let i = particles.length-1; i >= 0; i--) {
+      const p = particles[i];
+      p.life -= 0.03;
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.life <= 0) {
+        particles.splice(i,1);
+        continue;
+      }
+      ctx.save();
+      ctx.globalAlpha = p.life * 0.5;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = p.color;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+    requestAnimationFrame(drawTrail);
+  }
+  drawTrail();
+
+  // ---- Click ripple effect (for any card or button) ----
+  document.body.addEventListener('click', (e) => {
+    const ripple = document.createElement('div');
+    ripple.className = 'click-ripple';
+    ripple.style.left = e.clientX + 'px';
+    ripple.style.top = e.clientY + 'px';
+    document.body.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 800);
+  });
+
+  // ---- Add "crit" flash when hovering upgrade/weapon cards ----
+  const cards = document.querySelectorAll('.upgrade-showcase-card, .weapon-card, .enemy-card');
+  cards.forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      card.classList.add('card-flash');
+      setTimeout(() => card.classList.remove('card-flash'), 200);
+      // also increment fake global kills on hover (addictive)
+      const killsEl = document.getElementById('globalKills');
+      if (killsEl) {
+        let current = parseInt(killsEl.innerText.replace(/,/g,''));
+        if (!isNaN(current)) killsEl.innerText = (current + 1).toLocaleString();
+      }
+    });
+  });
+
+  // ---- Pulsing "PLAY NOW" button ----
+  const playBtn = document.querySelector('.btn-primary, .nav-cta, .hero-actions .btn-primary');
+  if (playBtn) {
+    setInterval(() => {
+      playBtn.classList.add('pulse-glow');
+      setTimeout(() => playBtn.classList.remove('pulse-glow'), 800);
+    }, 3000);
+  }
+})();
+
+// Typing animation for "HORDE"
+function typeHeroText() {
+  const target = document.getElementById('typingTarget');
+  if (!target) return;
+  const fullText = 'HORDE';
+  let i = 0;
+  target.innerText = '';
+  function type() {
+    if (i < fullText.length) {
+      target.innerText += fullText.charAt(i);
+      i++;
+      setTimeout(type, 120);
+    } else {
+      // remove cursor after typing once (optional)
+      target.style.borderRight = 'none';
+    }
+  }
+  type();
+}
+typeHeroText();
+
+// Toast notification system
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span>${type === 'tip' ? '💡' : type === 'event' ? '⚡' : '🔔'}</span>
+      <span style="flex:1">${message}</span>
+    </div>
+  `;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 500);
+  }, 4000);
+}
+
+// Rotating toast messages
+const toastMessages = [
+  { text: '💡 Tip: Keep moving – standing still is death', type: 'tip' },
+  { text: '⚡ Multi-Shot + Spread Shot = bullet hell', type: 'tip' },
+  { text: '🔥 Combo resets after 2.5 seconds – stay aggressive!', type: 'tip' },
+  { text: '🎯 Sniper rifle pierces through multiple enemies', type: 'tip' },
+  { text: '🛡️ Orbit Shield deals contact damage', type: 'tip' },
+  { text: '💀 Boss spawns every ~60 seconds – prepare!', type: 'tip' },
+  { text: '✨ Diarite can be spent in the Shop for permanent upgrades', type: 'event' },
+  { text: '👥 47 players are fighting right now', type: 'event' },
+  { text: '🏆 New record: Wave 27 achieved by a Ninja', type: 'event' },
+];
+let toastIndex = 0;
+setInterval(() => {
+  const msg = toastMessages[toastIndex % toastMessages.length];
+  showToast(msg.text, msg.type);
+  toastIndex++;
+}, 14000); // every 14 seconds

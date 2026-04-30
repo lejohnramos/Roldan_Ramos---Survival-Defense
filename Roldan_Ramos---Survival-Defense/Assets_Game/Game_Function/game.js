@@ -1726,6 +1726,7 @@ checkAchievements();
   if (e.type === 'boss') bossActive = false;
 
   combo += 1;
+  
   comboTimer = COMBO_WINDOW;
   if (combo >= 2) {
     const el = document.getElementById('comboDisplay');
@@ -4157,3 +4158,356 @@ function showAchievementsPanel() {
 
   document.body.appendChild(el);
 }
+
+// ========== MENU LIVELINESS – OUTSIDE THE GAME BOX ==========
+(function setupLivelyMenu() {
+  let active = false;
+  let particleInterval = null;
+  let countersIntervals = [];
+  let particleContainer = null;
+  let livePanel = null;
+
+  function clearMenuEnhancements() {
+    if (particleContainer) particleContainer.remove();
+    if (livePanel) livePanel.remove();
+    countersIntervals.forEach(clearInterval);
+    countersIntervals = [];
+    if (particleInterval) clearInterval(particleInterval);
+    document.body.classList.remove('menu-active');
+    active = false;
+    particleContainer = null;
+    livePanel = null;
+  }
+
+  function initMenuEnhancements() {
+    if (active) return;
+    const menu = document.getElementById('menuOverlay');
+    if (!menu || !menu.classList.contains('active')) return;
+
+    // ----- Rotating "Community Choice" weapon -----
+const communityWeapons = [
+  { icon: "🔫", name: "Basic Rifle",   votes: "10.2k" },
+  { icon: "🌊", name: "Spread Shot",   votes: "8.7k"  },
+  { icon: "🎯", name: "Sniper Rifle",  votes: "6.5k"  },
+  { icon: "🚀", name: "Rocket Launcher", votes: "12.1k" },
+  { icon: "🔮", name: "Orbit Shield",  votes: "5.4k"  },
+  { icon: "🔴", name: "Laser Beam",    votes: "9.3k"  }
+];
+
+const weaponContainer = document.createElement('div');
+weaponContainer.className = 'community-weapon';
+weaponContainer.innerHTML = `
+  <span class="community-label">COMMUNITY PICK</span>
+  <span class="community-weapon-icon" id="communityIcon">🔫</span>
+  <span id="communityName">Basic Rifle</span>
+  <span id="communityVotes" style="color:#fbbf24;">10.2k votes</span>
+`;
+document.body.appendChild(weaponContainer);
+
+let weaponIdx = 0;
+function rotateCommunityWeapon() {
+  weaponIdx = (weaponIdx + 1) % communityWeapons.length;
+  const w = communityWeapons[weaponIdx];
+  const iconSpan = document.getElementById('communityIcon');
+  const nameSpan = document.getElementById('communityName');
+  const voteSpan = document.getElementById('communityVotes');
+  if (!iconSpan || !nameSpan || !voteSpan) return;
+  
+  // Flip animation
+  weaponContainer.classList.add('flip');
+  setTimeout(() => {
+    iconSpan.innerText = w.icon;
+    nameSpan.innerText = w.name;
+    voteSpan.innerText = w.votes + ' votes';
+    weaponContainer.classList.remove('flip');
+  }, 200);
+}
+
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  rotateCommunityWeapon();
+}, 5000));
+
+    // ----- Voice line popups -----
+const voiceLines = [
+  "⚠️ ENEMY WAVE INBOUND!",
+  "💀 ELITE DETECTED!",
+  "🎯 HEADSHOT! +50 XP",
+  "🔥 10 KILL STREAK!",
+  "🛡️ SHIELD ACTIVATED!",
+  "🚀 ROCKET LAUNCHER AVAILABLE!",
+  "💊 MEDKIT DROPPED!",
+  "🏆 NEW HIGH SCORE!",
+  "⚡ COMBO x15!",
+  "🎖️ LEVEL UP!",
+  "💎 DIARITE COLLECTED!",
+  "👑 BOSS SPAWNING!",
+  "🌀 ORBIT SHIELD READY!",
+  "🔫 SNIPER RIFLE LOADED!"
+];
+
+function showVoiceLine() {
+  const line = voiceLines[Math.floor(Math.random() * voiceLines.length)];
+  const popup = document.createElement('div');
+  popup.className = 'voice-popup';
+  popup.innerText = line;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 3000);
+}
+
+// Show a random voice line every 15–25 seconds
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  showVoiceLine();
+}, Math.random() * 10000 + 15000));
+
+  const graph = document.createElement('div');
+graph.className = 'kps-graph';
+graph.innerHTML = '<span style="margin-right:6px;">KPS</span>';
+document.body.appendChild(graph);
+let bars = [];
+for (let i=0;i<10;i++) {
+  let bar = document.createElement('div');
+  bar.className = 'kps-bar';
+  bar.style.height = '0px';
+  graph.appendChild(bar);
+  bars.push(bar);
+}
+setInterval(() => {
+  let val = Math.random() * 40 + 5;
+  bars.push(bars.shift());
+  bars.forEach((b, idx) => {
+    b.style.height = (Math.random() * 20 + 5) + 'px';
+  });
+}, 800);
+
+    const fakeNames = ['Rogue', 'Vanguard', 'Phantom', 'Valkyrie', 'Titan', 'Wraith', 'Mirage'];
+function notifyJoin() {
+  const name = fakeNames[Math.floor(Math.random() * fakeNames.length)] + Math.floor(Math.random() * 100);
+  const notif = document.createElement('div');
+  notif.className = 'join-notify';
+  notif.innerHTML = `⚡ ${name} joined the lobby`;
+  document.body.appendChild(notif);
+  setTimeout(() => notif.remove(), 4000);
+}
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  notifyJoin();
+}, 7000));
+
+    function spawnCrystal() {
+  const crystal = document.createElement('div');
+  crystal.className = 'diarite-crystal';
+  crystal.style.left = Math.random() * 100 + '%';
+  crystal.style.bottom = '-20px';
+  crystal.style.animationDuration = Math.random() * 5 + 5 + 's';
+  crystal.style.animationDelay = Math.random() * 2 + 's';
+  document.body.appendChild(crystal);
+  setTimeout(() => crystal.remove(), 10000);
+}
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  for (let i = 0; i < 2; i++) spawnCrystal();
+}, 3000));
+
+    const lobbyBar = document.createElement('div');
+lobbyBar.className = 'lobby-bar';
+lobbyBar.innerHTML = `
+  <div class="lobby-stat"><span class="dot"></span><span>IN LOBBY: <span id="lobbyCount">342</span></span></div>
+  <div class="lobby-stat">🕒 AVG WAIT: 12s</div>
+  <div class="lobby-stat">⚔️ GAMES ACTIVE: 47</div>
+`;
+document.body.appendChild(lobbyBar);
+// Fake counter for lobby count
+let lobbyPlayers = 342;
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  lobbyPlayers = 320 + Math.floor(Math.random() * 80);
+  const span = document.getElementById('lobbyCount');
+  if (span) span.innerText = lobbyPlayers;
+}, 4000));
+// Cleanup later
+
+    const chatBox = document.createElement('div');
+chatBox.className = 'live-chat-feed';
+chatBox.innerHTML = '<div style="color:#60a5fa; margin-bottom:6px;">⚡ COMBAT FEED</div>';
+document.body.appendChild(chatBox);
+
+const messages = [
+  '[Soldier] Killed 5 enemies in 10s!',
+  '[Ninja] 🔥 15 kill streak!',
+  '[Heavy] Tanked a boss hit!',
+  '[Assassin] Backstabbed an Elite',
+  '[Medic] Healed 200 HP for squad',
+  '⚠ Wave 8 incoming!',
+  '🏆 New high score: Wave 14'
+];
+let idx = 0;
+const feedInterval = setInterval(() => {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'chat-message';
+  msgDiv.textContent = messages[idx % messages.length];
+  chatBox.appendChild(msgDiv);
+  idx++;
+  setTimeout(() => msgDiv.style.opacity = '0', 4500);
+  setTimeout(() => msgDiv.remove(), 5500);
+  // keep only last 5 messages
+  while (chatBox.children.length > 6) chatBox.removeChild(chatBox.children[1]);
+}, 6000);
+countersIntervals.push(feedInterval);
+
+    const glow = document.createElement('div');
+glow.className = 'mouse-glow';
+document.body.appendChild(glow);
+document.addEventListener('mousemove', (e) => {
+  if (!active) return;
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+    clearMenuEnhancements(); // safety
+    active = true;
+    document.body.classList.add('menu-active');
+
+    // ---- 1. Floating particles container on body ----
+    particleContainer = document.createElement('div');
+    particleContainer.className = 'menu-particles';
+    document.body.appendChild(particleContainer);
+
+    function createParticle() {
+      if (!particleContainer) return;
+      const p = document.createElement('div');
+      p.className = 'menu-particle';
+      const size = Math.random() * 4 + 2;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.top = Math.random() * 100 + '%';
+      p.style.animationDuration = Math.random() * 3 + 2 + 's';
+      p.style.animationDelay = Math.random() * 2 + 's';
+      p.style.background = `rgba(96, 165, 250, ${Math.random() * 0.5 + 0.2})`;
+      particleContainer.appendChild(p);
+      setTimeout(() => p.remove(), 5000);
+    }
+
+    particleInterval = setInterval(() => {
+      if (!active) return;
+      for (let i = 0; i < 3; i++) createParticle();
+    }, 400);
+
+    // ---- 2. Live panel on body (bottom‑right) ----
+    livePanel = document.createElement('div');
+    livePanel.className = 'menu-live-panel';
+    livePanel.innerHTML = `
+      <div class="menu-live-stats">
+        <div class="menu-live-stat"><span>🌍 GLOBAL KILLS</span><span id="menuGlobalKills">0</span></div>
+        <div class="menu-live-stat"><span>⚡ ACTIVE OPERATIVES</span><span id="menuActiveOps">0</span></div>
+        <div class="menu-live-stat"><span>🏆 BEST WAVE</span><span id="menuBestWave">0</span></div>
+      </div>
+      <div class="menu-spotlight">
+        <div class="menu-spotlight-icon" id="menuSpotIcon">🔫</div>
+        <div class="menu-spotlight-text">
+          <span class="menu-spotlight-label">FEATURED WEAPON</span>
+          <span class="menu-spotlight-value" id="menuSpotWeapon">Basic Rifle</span>
+        </div>
+      </div>
+      <div class="menu-tip" id="menuTip">💡 Tip: Keep moving – standing still is death</div>
+    `;
+    document.body.appendChild(livePanel);
+
+    // ---- 3. Fake counters (same as before) ----
+    let globalKills = 18740;
+    let activeOps = 1240;
+    let bestWave = 12;
+
+    countersIntervals.push(setInterval(() => {
+      if (!active) return;
+      globalKills += Math.floor(Math.random() * 23) + 5;
+      const el = document.getElementById('menuGlobalKills');
+      if (el) el.innerText = globalKills.toLocaleString();
+    }, 1500));
+
+    countersIntervals.push(setInterval(() => {
+      if (!active) return;
+      activeOps = 1100 + Math.floor(Math.random() * 700);
+      const el = document.getElementById('menuActiveOps');
+      if (el) el.innerText = activeOps.toLocaleString();
+    }, 2000));
+
+    countersIntervals.push(setInterval(() => {
+      if (!active) return;
+      bestWave += Math.random() < 0.3 ? 1 : 0;
+      const el = document.getElementById('menuBestWave');
+      if (el) el.innerText = bestWave;
+    }, 4000));
+
+    // Rotating weapon spotlight
+    const weapons = [
+      { icon: '🔫', name: 'Basic Rifle' },
+      { icon: '🌊', name: 'Spread Shot' },
+      { icon: '🎯', name: 'Sniper Rifle' },
+      { icon: '🚀', name: 'Rocket Launcher' },
+      { icon: '🔮', name: 'Orbit Shield' },
+      { icon: '🔴', name: 'Laser Beam' }
+    ];
+    let wIdx = 0;
+    countersIntervals.push(setInterval(() => {
+      if (!active) return;
+      wIdx = (wIdx + 1) % weapons.length;
+      const iconSpan = document.getElementById('menuSpotIcon');
+      const nameSpan = document.getElementById('menuSpotWeapon');
+      if (iconSpan && nameSpan) {
+        iconSpan.innerText = weapons[wIdx].icon;
+        nameSpan.innerText = weapons[wIdx].name;
+        iconSpan.style.transform = 'scale(1.2)';
+        setTimeout(() => { if (iconSpan) iconSpan.style.transform = ''; }, 200);
+      }
+    }, 3200));
+
+    const tips = [
+      '💡 Kill Splitters first – they multiply!',
+      '⚡ Level up before the boss wave (every ~60s)',
+      '🎯 Multi‑Shot + Spread Shot = bullet hell',
+      '🛡️ Orbit Shield lets you tank while moving',
+      '❤️ HP pickups heal 20 HP – don’t waste them',
+      '🔥 Keep the combo alive within 2.5 seconds'
+    ];
+    let tipIdx = 0;
+    countersIntervals.push(setInterval(() => {
+      if (!active) return;
+      tipIdx = (tipIdx + 1) % tips.length;
+      const tipEl = document.getElementById('menuTip');
+      if (tipEl) tipEl.innerText = tips[tipIdx];
+    }, 5000));
+  }
+
+  // Watch for menu active/inactive
+  function checkMenu() {
+    const menu = document.getElementById('menuOverlay');
+    if (!menu) return;
+    if (menu.classList.contains('active')) {
+      initMenuEnhancements();
+    } else {
+      clearMenuEnhancements();
+    }
+  }
+
+  const origShow = window.showOverlay;
+  const origHide = window.hideOverlay;
+  window.showOverlay = function(id) {
+    origShow(id);
+    if (id === 'menuOverlay') checkMenu();
+  };
+  window.hideOverlay = function(id) {
+    origHide(id);
+    if (id === 'menuOverlay') checkMenu();
+  };
+
+  const origStartGame = window.startGame;
+  window.startGame = function() {
+    clearMenuEnhancements();
+    origStartGame();
+  };
+
+  checkMenu();
+})();
