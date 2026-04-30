@@ -236,6 +236,7 @@ let fireMode = 'auto';       // 'auto' | 'manual'
 let mouseX   = W / 2;        // mouse position in SCREEN space
 let mouseY   = H / 2;
 let mouseDown = false;        // is left mouse button held
+let achievementStats = {};
 
 // ── World / Camera ────────────────────────────
 const WORLD_W = W * 3;   // 3120 px wide
@@ -273,6 +274,28 @@ const DIARITE_REWARDS = {
   shielded: 12,
   splitter: 10,
   standard: 5,
+};
+
+const ACHIEVEMENTS = [
+  { id: 'first_blood',    name: 'FIRST BLOOD',     desc: 'Kill your first enemy',          req: (s) => s.kills >= 1,        reward: 10,  icon: '🩸' },
+  { id: 'killer_10',      name: 'ROOKIE',           desc: 'Kill 10 enemies in one run',     req: (s) => s.kills >= 10,       reward: 15,  icon: '💀' },
+  { id: 'killer_50',      name: 'VETERAN',          desc: 'Kill 50 enemies in one run',     req: (s) => s.kills >= 50,       reward: 25,  icon: '⚔️'  },
+  { id: 'killer_100',     name: 'SLAUGHTERER',      desc: 'Kill 100 enemies in one run',    req: (s) => s.kills >= 100,      reward: 50,  icon: '☠️'  },
+  { id: 'wave_4',         name: 'HOLD THE LINE',    desc: 'Reach wave 4',                   req: (s) => s.wave >= 4,         reward: 20,  icon: '🌊' },
+  { id: 'wave_7',         name: 'LAST STAND',       desc: 'Reach wave 7',                   req: (s) => s.wave >= 7,         reward: 40,  icon: '🔥' },
+  { id: 'level_5',        name: 'LEVELED UP',       desc: 'Reach level 5',                  req: (s) => s.level >= 5,        reward: 20,  icon: '⭐' },
+  { id: 'boss_kill',      name: 'BOSS SLAYER',      desc: 'Kill a boss enemy',              req: (s) => s.bossKills >= 1,    reward: 50,  icon: '👑' },
+  { id: 'combo_10',       name: 'COMBO KING',       desc: 'Get a 10-kill combo',            req: (s) => s.maxCombo >= 10,    reward: 30,  icon: '✨' },
+  { id: 'survive_90',     name: 'SURVIVOR',         desc: 'Survive for 90 seconds',         req: (s) => s.timeAlive >= 90,   reward: 35,  icon: '⏱️' },
+  { id: 'survive_full',   name: 'INDESTRUCTIBLE',   desc: 'Survive the full 2 minutes',     req: (s) => s.survived === true, reward: 100, icon: '🏆' },
+  { id: 'all_weapons',    name: 'ARMS DEALER',      desc: 'Unlock 4 different weapons',     req: (s) => s.weaponsUnlocked >= 4, reward: 60, icon: '🔫' },
+];
+
+const SECRET_WEAPON = {
+  id: 'plasma',
+  name: 'PLASMA CANNON',
+  desc: 'Unlocked by completing all achievements. Fires a massive plasma orb that pierces everything.',
+  icon: '🔮',
 };
 
 function loadShopState() {
@@ -324,6 +347,123 @@ function refreshHUDDiarite() {
   if (el) el.textContent = cachedShopState.diarite || 0;
 }
 function invalidateShopCache() { cachedShopState = null; }
+
+function loadAchievements() {
+  try {
+    const r = localStorage.getItem('sdAchievements');
+    return r ? JSON.parse(r) : {};
+  } catch(e) { return {}; }
+}
+
+function saveAchievement(id) {
+  const a = loadAchievements();
+  a[id] = true;
+  localStorage.setItem('sdAchievements', JSON.stringify(a));
+}
+
+function checkAchievements() {
+  const unlocked = loadAchievements();
+  let newlyUnlocked = [];
+
+  for (const a of ACHIEVEMENTS) {
+    if (!unlocked[a.id] && a.req(achievementStats)) {
+      saveAchievement(a.id);
+      awardDiarite(a.reward);
+      newlyUnlocked.push(a);
+    }
+  }
+
+  function showAchievementPopup(achievement) {
+  const existing = document.getElementById('achPopup');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.id = 'achPopup';
+  el.innerHTML = `
+    <div style="font-size:11px;letter-spacing:3px;color:rgba(251,191,36,0.7);margin-bottom:4px;">ACHIEVEMENT UNLOCKED</div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:26px">${achievement.icon}</span>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:13px;font-weight:700;color:#fbbf24;letter-spacing:2px;">${achievement.name}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;">${achievement.desc}</div>
+      </div>
+      <div style="margin-left:auto;font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:#a78bfa;">+${achievement.reward}◆</div>
+    </div>
+  `;
+  el.style.cssText = `
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+    background:rgba(8,12,22,0.97); border:1px solid rgba(251,191,36,0.5);
+    border-radius:10px; padding:14px 20px; min-width:340px; max-width:90vw;
+    z-index:9999; font-family:'Share Tech Mono',monospace;
+    box-shadow:0 0 30px rgba(251,191,36,0.2);
+    animation:achSlideIn 0.4s cubic-bezier(0.22,1,0.36,1);
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity 0.5s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 500);
+  }, 3500);
+}
+
+function showSecretWeaponPopup() {
+  const el = document.createElement('div');
+  el.innerHTML = `
+    <div style="font-size:11px;letter-spacing:3px;color:rgba(167,139,250,0.8);margin-bottom:8px;text-align:center;">🎉 ALL ACHIEVEMENTS COMPLETE 🎉</div>
+    <div style="font-size:32px;text-align:center;margin-bottom:8px;">🔮</div>
+    <div style="font-family:'Orbitron',monospace;font-size:16px;font-weight:900;color:#a78bfa;letter-spacing:3px;text-align:center;margin-bottom:6px;">PLASMA CANNON</div>
+    <div style="font-size:10px;color:rgba(255,255,255,0.5);text-align:center;line-height:1.6;">Secret weapon unlocked!<br>Fires a massive piercing orb. Available as an upgrade.</div>
+  `;
+  el.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:rgba(8,12,22,0.99); border:1px solid rgba(167,139,250,0.7);
+    border-radius:14px; padding:28px 36px; z-index:99999;
+    font-family:'Share Tech Mono',monospace;
+    box-shadow:0 0 60px rgba(167,139,250,0.4);
+  `;
+  document.body.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity 0.6s';
+    el.style.opacity = '0';
+    setTimeout(() => el.remove(), 600);
+  }, 5000);
+}
+
+  for (const a of newlyUnlocked) {
+    showAchievementPopup(a);
+  }
+
+  // Check if all achievements done → unlock secret weapon
+  if (!isSecretWeaponUnlocked() && checkAllAchievementsComplete()) {
+    unlockSecretWeapon();
+    setTimeout(() => showSecretWeaponPopup(), 2000);
+  }
+}
+
+function isAchievementUnlocked(id) {
+  return !!loadAchievements()[id];
+}
+
+function checkAllAchievementsComplete() {
+  const unlocked = loadAchievements();
+  return ACHIEVEMENTS.every(a => unlocked[a.id]);
+}
+
+function isSecretWeaponUnlocked() {
+  try {
+    const s = localStorage.getItem('sdShop');
+    if (!s) return false;
+    return JSON.parse(s).secretWeapon === true;
+  } catch(e) { return false; }
+}
+
+function unlockSecretWeapon() {
+  try {
+    const s = loadShopState();
+    s.secretWeapon = true;
+    localStorage.setItem('sdShop', JSON.stringify(s));
+  } catch(e) {}
+}
 
 function applyShopState() {
   const s = loadShopState();
@@ -638,6 +778,7 @@ function drawProp(p) {
 }
 
 const UPGRADES = [
+  { id: 'wPlasma', icon: '🔮', name: 'PLASMA CANNON', desc: 'Massive piercing orb · unlocks after all achievements', weaponUnlock: 'plasma' },
   { id: 'speed',      icon: '⚡', name: 'SWIFT BOOTS',   desc: '+20% move speed'                    },
   { id: 'damage',     icon: '🔥', name: 'POWER STRIKE',  desc: '+50% bullet damage'                 },
   { id: 'fireRate',   icon: '🌀', name: 'RAPID FIRE',    desc: '+30% fire rate'                     },
@@ -656,6 +797,7 @@ let unlockedWeapons = new Set(['basic']);
 
 function randUpgrades() {
   const pool = UPGRADES.filter(u => {
+    if (u.id === 'wPlasma') return isSecretWeaponUnlocked() && !unlockedWeapons.has('plasma');
     if (u.weaponUnlock) return !unlockedWeapons.has(u.weaponUnlock);
     return true;
   });
@@ -1244,6 +1386,16 @@ function initGame() {
   rockets       = [];
   laserTimer    = 0;
   combo         = 0;
+  achievementStats = {
+  kills: 0,
+  wave: 1,
+  level: 1,
+  bossKills: 0,
+  maxCombo: 0,
+  timeAlive: 0,
+  weaponsUnlocked: 1,
+  survived: false,
+};
   comboTimer    = 0;
   bossTimer     = 0;
   bossActive    = false;
@@ -1466,7 +1618,7 @@ function spawnBullet(angle, speed, dmg = 15 * abilities.damage, pierce = false) 
     x: player.x, y: player.y,
     vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
     r: 5 * abilities.bulletSize, dmg, pierce,
-    color: weaponType === 'sniper' ? '#fbbf24' : '#93c5fd',
+    color: weaponType === 'sniper' ? '#fbbf24' : weaponType === 'plasma' ? '#c084fc' : '#93c5fd',
     trail: [],
   });
 }
@@ -1561,6 +1713,11 @@ function killEnemy(e) {
 
   xp += finalXp;
   kills += 1;
+
+  achievementStats.kills = kills;
+if (e.type === 'boss') achievementStats.bossKills = (achievementStats.bossKills || 0) + 1;
+if (combo > achievementStats.maxCombo) achievementStats.maxCombo = combo;
+checkAchievements();
 
   const diariteAmt = DIARITE_REWARDS[e.type] || DIARITE_REWARDS.standard;
   awardDiarite(diariteAmt);
@@ -1697,6 +1854,8 @@ setTimeout(() => {
     submitScore(name.trim(), kills, wave, level);
   }
 }, 500);
+if (won) achievementStats.survived = true;
+checkAchievements();
   showOverlay('endOverlay');
 }
 
@@ -1807,6 +1966,10 @@ function gameLoop(timestamp) {
     for (let i = 0; i < count; i++) spawnEnemy();
   }
   wave = Math.floor((120 - gameTimer) / 15) + 1;
+  achievementStats.wave = wave;
+achievementStats.level = level;
+achievementStats.timeAlive = 120 - gameTimer;
+achievementStats.weaponsUnlocked = unlockedWeapons.size;
 
   bossTimer += dt;
   if (bossTimer >= 60 && !bossActive) { bossTimer = 0; spawnEnemy('boss'); }
@@ -1830,6 +1993,14 @@ function gameLoop(timestamp) {
       else if (weaponType === 'orbit') { if (orbitBullets.length === 0) shoot(); }
       else shoot();
     }
+
+    } else if (weaponType === 'plasma') {
+  spawnBullet(aimAngle, 5, 120 * abilities.damage, true);
+  // Extra orbs spread slightly
+  spawnBullet(aimAngle - 0.15, 5, 80 * abilities.damage, true);
+  spawnBullet(aimAngle + 0.15, 5, 80 * abilities.damage, true);
+
+    
   } else {
     // Manual fire mode
     const canFire = shootTimer >= fireInterval;
@@ -3918,4 +4089,60 @@ function showToast(msg) {
   `;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 2500);
+}
+
+function showAchievementsPanel() {
+  const existing = document.getElementById('achPanel');
+  if (existing) { existing.remove(); return; }
+
+  const unlocked = loadAchievements();
+  const total = ACHIEVEMENTS.length;
+  const done = Object.keys(unlocked).length;
+
+  const el = document.createElement('div');
+  el.id = 'achPanel';
+  el.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+    background:rgba(8,12,22,0.99); border:1px solid rgba(251,191,36,0.4);
+    border-radius:12px; padding:24px; min-width:420px; max-width:92vw;
+    max-height:80vh; overflow-y:auto; z-index:9999;
+    font-family:'Share Tech Mono',monospace;
+  `;
+
+  const secretDone = isSecretWeaponUnlocked();
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:800;color:#fbbf24;letter-spacing:3px;">ACHIEVEMENTS</div>
+      <div style="font-size:11px;color:rgba(255,255,255,0.4);">${done}/${total}</div>
+      <button onclick="document.getElementById('achPanel').remove()" style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.5);border-radius:4px;padding:4px 10px;cursor:pointer;font-family:'Share Tech Mono',monospace;">✕</button>
+    </div>
+    <div style="height:4px;background:rgba(255,255,255,0.07);border-radius:2px;margin-bottom:16px;">
+      <div style="height:100%;width:${(done/total)*100}%;background:#fbbf24;border-radius:2px;transition:width 0.3s;"></div>
+    </div>
+    ${ACHIEVEMENTS.map(a => {
+      const got = !!unlocked[a.id];
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;margin-bottom:6px;
+        background:${got ? 'rgba(251,191,36,0.07)' : 'rgba(255,255,255,0.02)'};
+        border:1px solid ${got ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.06)'};border-radius:7px;
+        opacity:${got ? '1' : '0.5'};">
+        <span style="font-size:22px">${got ? a.icon : '🔒'}</span>
+        <div style="flex:1">
+          <div style="font-family:'Orbitron',monospace;font-size:10px;font-weight:700;color:${got ? '#fbbf24' : '#aaa'};letter-spacing:1px;">${a.name}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.4);margin-top:2px;">${a.desc}</div>
+        </div>
+        <div style="font-family:'Orbitron',monospace;font-size:11px;font-weight:700;color:#a78bfa;">+${a.reward}◆</div>
+        ${got ? '<span style="color:#34d399;font-size:16px">✓</span>' : ''}
+      </div>`;
+    }).join('')}
+    <div style="margin-top:12px;padding:12px;border:1px solid ${secretDone ? 'rgba(167,139,250,0.5)' : 'rgba(255,255,255,0.08)'};border-radius:8px;
+      background:${secretDone ? 'rgba(167,139,250,0.1)' : 'rgba(0,0,0,0.3)'};text-align:center;">
+      <div style="font-size:24px;margin-bottom:6px;">${secretDone ? '🔮' : '❓'}</div>
+      <div style="font-family:'Orbitron',monospace;font-size:11px;color:${secretDone ? '#a78bfa' : 'rgba(255,255,255,0.25)'};letter-spacing:2px;">
+        ${secretDone ? 'PLASMA CANNON — UNLOCKED' : 'SECRET WEAPON — Complete all achievements'}
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(el);
 }
