@@ -3957,6 +3957,34 @@ render = function() {
   if (isMobile()) drawJoystick();
 };
 
+// ========== INTRO SCREEN ==========
+(function setupIntro() {
+  const intro = document.getElementById('introScreen');
+  if (!intro) return;
+
+  let dismissed = false;
+
+  function dismissIntro() {
+    if (dismissed) return;
+    dismissed = true;
+    intro.style.opacity = '0';
+    setTimeout(() => {
+      intro.remove();
+      startMenuBg();
+      updateMenuRecords();
+      startMenuMusic();
+    }, 1000);
+  }
+
+  // Auto dismiss after 5 seconds
+  setTimeout(dismissIntro, 5000);
+
+  // Dismiss on key press or click
+  document.addEventListener('keydown', dismissIntro, { once: true });
+  document.addEventListener('click', dismissIntro, { once: true });
+  document.addEventListener('touchstart', dismissIntro, { once: true });
+})();
+
 startMenuBg();
 updateMenuRecords();
 
@@ -4196,10 +4224,6 @@ document.addEventListener('touchend',   unlockAudio, { once: true });
 document.body.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
 console.log('[Mobile patch loaded] isMobile:', isMobile());
-
-startMenuBg();
-updateMenuRecords();
-startMenuMusic();
 
 // Migrate old save data that's missing characters key
 (function migrateSaveData() {

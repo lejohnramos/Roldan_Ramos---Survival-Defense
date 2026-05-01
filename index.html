@@ -149,35 +149,19 @@
   </div>
 </section>
 
-<!-- ========== GAMEPLAY PREVIEW ========== -->
-<section id="gameplay" class="section">
-  <div class="section-label">// WATCH THE ACTION</div>
-  <h2 class="section-title">SEE THE <span class="accent">CHAOS</span></h2>
-  <p class="section-desc">Undiluted wave defense. Auto‑targeting, devastating weapons, and an ever‑growing horde.</p>
-
-  <div class="gameplay-container">
-    <div class="gameplay-mock" id="gameplayMock">
-<div class="gameplay-mock" id="gameplayMock">
-  <video autoplay loop muted playsinline poster="thumbnail.jpg" style="width:100%; border-radius:16px;">
-    <source src="Roldan_Ramos---Survival-Defense/Assets_Portal/Recording 2026-04-30 112024.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  <div class="gameplay-overlay">
-    <div class="glow-ring"></div>
-    <div class="play-hint">🎬 GAMEPLAY PREVIEW</div>
+<!-- Floating Gameplay Preview -->
+<div id="floatingGameplay">
+  <div class="fg-header">
+    <span class="fg-label">🎬 GAMEPLAY PREVIEW</span>
+    <button class="fg-minimize" id="fgMinimize">—</button>
+  </div>
+  <div class="fg-body" id="fgBody">
+    <video autoplay loop muted playsinline>
+      <source src="Roldan_Ramos---Survival-Defense/Assets_Portal/Recording 2026-04-30 112024.mp4" type="video/mp4">
+    </video>
+    <div class="fg-footer">⚡ Real in-engine capture</div>
   </div>
 </div>
-    <div class="gameplay-caption">
-      ⚡ Real in‑engine capture • Auto‑targeting • Lasers • Rocket barrages • Boss battles
-    </div>
-    <div class="gameplay-actions">
-      <a href="Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/game.html" class="btn-primary">
-        <span class="btn-icon">▶</span> PLAY NOW
-      </a>
-      <button class="btn-ghost" id="refreshPreviewBtn">⟳ REPLAY PREVIEW</button>
-    </div>
-  </div>
-</section>
 
 <!-- UPGRADES SHOWCASE -->
 <section id="upgrades" class="section">
@@ -366,6 +350,63 @@
         <span>🔥 Passive defense</span>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-label">// OPERATIVE ROSTER</div>
+  <h2 class="section-title">CHOOSE YOUR <span class="accent">OPERATIVE</span></h2>
+  <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:13px;">
+      <tr style="color:var(--accent);border-bottom:1px solid var(--surface-border);">
+        <th style="padding:12px;text-align:left;">OPERATIVE</th>
+        <th style="padding:12px;">SPEED</th>
+        <th style="padding:12px;">HP</th>
+        <th style="padding:12px;">DAMAGE</th>
+        <th style="padding:12px;">FIRE RATE</th>
+        <th style="padding:12px;">SPECIAL</th>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:12px;">🔫 SOLDIER</td>
+        <td style="padding:12px;text-align:center;color:#60a5fa;">★★★</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">100</td>
+        <td style="padding:12px;text-align:center;">1.0×</td>
+        <td style="padding:12px;text-align:center;">1.0×</td>
+        <td style="padding:12px;color:var(--text-dim);">Balanced</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
+        <td style="padding:12px;">🗡️ NINJA</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">★★★★★</td>
+        <td style="padding:12px;text-align:center;color:#f87171;">80</td>
+        <td style="padding:12px;text-align:center;">0.8×</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">1.5×</td>
+        <td style="padding:12px;color:var(--text-dim);">Speed demon</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+        <td style="padding:12px;">🛡️ HEAVY</td>
+        <td style="padding:12px;text-align:center;color:#f87171;">★★</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">180</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">1.5×</td>
+        <td style="padding:12px;text-align:center;color:#f87171;">0.7×</td>
+        <td style="padding:12px;color:var(--text-dim);">Tank</td>
+      </tr>
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);">
+        <td style="padding:12px;">🔪 ASSASSIN</td>
+        <td style="padding:12px;text-align:center;color:#60a5fa;">★★★★</td>
+        <td style="padding:12px;text-align:center;color:#f87171;">90</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">1.3×</td>
+        <td style="padding:12px;text-align:center;">1.2×</td>
+        <td style="padding:12px;color:var(--text-dim);">Burst damage</td>
+      </tr>
+      <tr>
+        <td style="padding:12px;">💉 MEDIC</td>
+        <td style="padding:12px;text-align:center;color:#60a5fa;">★★★</td>
+        <td style="padding:12px;text-align:center;color:#34d399;">120</td>
+        <td style="padding:12px;text-align:center;color:#f87171;">0.9×</td>
+        <td style="padding:12px;text-align:center;color:#f87171;">0.9×</td>
+        <td style="padding:12px;color:#34d399;">+3 HP/sec regen</td>
+      </tr>
+    </table>
   </div>
 </section>
 
@@ -593,29 +634,6 @@
       <div class="tip-number">08</div>
       <h3>Weapon Mastery</h3>
       <p>Each weapon excels in different situations. Spread = crowds. Sniper = elites. Laser = sustained DPS. Rockets = AoE.</p>
-    </div>
-  </div>
-</section>
-
-<!-- CTA PORTAL -->
-<section class="cta-section">
-  <div class="cta-glow"></div>
-  <div class="cta-inner">
-    <div class="cta-label">READY TO FIGHT?</div>
-    <h2 class="cta-title">ENTER THE<br><span class="accent">ARENA</span></h2>
-    <p class="cta-desc">No downloads. No installs. Pure browser-based survival action.<br> Can you survive the full 2 minutes?</p>
-    <a href="Roldan_Ramos---Survival-Defense/Assets_Game/Game_Function/game.html" class="btn-primary btn-primary--xl">
-      <span class="btn-icon">▶</span>
-      PLAY ORBITAL BARRAGE
-    </a>
-    <div class="cta-controls-hint">
-      <span>⌨ WASD / Arrow Keys to move</span>
-      <span>•</span>
-      <span>🎯 Auto-attack enabled</span>
-      <span>•</span>
-      <span>⏱️ Survive 2 minutes</span>
-      <span>•</span>
-      <span>⬆️ Level up for upgrades</span>
     </div>
   </div>
 </section>

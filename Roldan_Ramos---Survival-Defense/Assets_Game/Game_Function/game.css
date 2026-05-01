@@ -2325,3 +2325,79 @@ body.menu-active #gameContainer {
   color: rgba(255,255,255,0.5);
   letter-spacing: 3px;
 }
+
+#introScreen {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  transition: opacity 1s ease;
+}
+
+#introContent {
+  text-align: center;
+  animation: introFadeIn 2s ease forwards;
+}
+
+#introSubtitle {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  letter-spacing: 8px;
+  color: rgba(96,165,250,0.7);
+  margin-bottom: 16px;
+  animation: introSlideUp 1s ease forwards;
+}
+
+#introTitle {
+  font-family: 'Orbitron', monospace;
+  font-size: clamp(48px, 10vw, 100px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 12px;
+  text-shadow:
+    0 0 40px rgba(96,165,250,0.8),
+    0 0 80px rgba(96,165,250,0.4),
+    0 0 120px rgba(96,165,250,0.2);
+  animation: introGlow 2s ease-in-out infinite alternate;
+  margin-bottom: 20px;
+}
+
+#introTagline {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 4px;
+  color: rgba(248,113,113,0.8);
+  margin-bottom: 48px;
+}
+
+#introPulse {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.4);
+  animation: introPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes introFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes introSlideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes introGlow {
+  from { text-shadow: 0 0 40px rgba(96,165,250,0.8), 0 0 80px rgba(96,165,250,0.4); }
+  to   { text-shadow: 0 0 60px rgba(96,165,250,1), 0 0 120px rgba(96,165,250,0.6), 0 0 160px rgba(167,139,250,0.3); }
+}
+
+@keyframes introPulse {
+  0%, 100% { opacity: 0.3; }
+  50%       { opacity: 1; }
+}

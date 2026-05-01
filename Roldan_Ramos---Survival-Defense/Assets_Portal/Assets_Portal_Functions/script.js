@@ -559,3 +559,13 @@ setInterval(() => {
   showToast(msg.text, msg.type);
   toastIndex++;
 }, 14000); // every 14 seconds
+
+// Floating gameplay minimize toggle
+const fgMinimize = document.getElementById('fgMinimize');
+const floatingGameplay = document.getElementById('floatingGameplay');
+if (fgMinimize && floatingGameplay) {
+  fgMinimize.addEventListener('click', () => {
+    floatingGameplay.classList.toggle('minimized');
+    fgMinimize.textContent = floatingGameplay.classList.contains('minimized') ? '▶' : '—';
+  });
+}

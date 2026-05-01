@@ -1872,25 +1872,24 @@ body {
 .gameplay-container { padding: 28px; margin-top: 24px; }
 .gameplay-caption { margin: 20px 0 24px; }
 
-/* ========== MAKE GAMEPLAY PREVIEW SMALLER ========== */
 .gameplay-container {
-  max-width: 800px;           /* limit width */
+  max-width: 100%;
   margin-left: auto;
   margin-right: auto;
 }
 .gameplay-mock {
   max-width: 100%;
+  width: 100%;
 }
-#previewCanvas, 
-.gameplay-mock video,
-.gameplay-mock iframe {
-  max-height: 380px;          /* reduce height */
-  width: auto;
+.gameplay-mock video {
+  width: 100% !important;
+  height: auto;
+  max-height: none;
   display: block;
-  margin: 0 auto;
+  border-radius: 16px;
 }
 .gameplay-actions {
-  margin-top: 8px;            /* less top margin */
+  margin-top: 8px;
 }
 
 /* ── LIVELY PANEL (top right) ── */
@@ -2096,4 +2095,84 @@ body {
 }
 @keyframes toastFade {
   to { opacity: 0; transform: translateX(100%); }
+}
+
+/* ── FLOATING GAMEPLAY PREVIEW ── */
+#floatingGameplay {
+  position: fixed;
+  top: 80px;
+  left: 20px;
+  width: 300px;
+  background: rgba(5, 5, 8, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;
+}
+
+.fg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(129, 140, 248, 0.1);
+  border-bottom: 1px solid rgba(129, 140, 248, 0.2);
+}
+
+.fg-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--accent-bright);
+}
+
+.fg-minimize {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.5);
+  border-radius: 4px;
+  padding: 1px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.fg-minimize:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.fg-body video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fg-footer {
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--text-faint);
+  text-align: center;
+  background: rgba(0,0,0,0.3);
+}
+
+/* Minimized state */
+#floatingGameplay.minimized .fg-body {
+  display: none;
+}
+
+#floatingGameplay.minimized {
+  width: 220px;
+}
+
+/* Mobile - hide it to avoid clutter */
+@media (max-width: 768px) {
+  #floatingGameplay {
+    display: none;
+  }
 }
