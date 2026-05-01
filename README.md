@@ -186,7 +186,10 @@ Each one rewards **diarite (◆)** and brings you one step closer to unlocking t
 
 ### 👥 Multiplayer *(2–4 players, self-hosted)*
 
-1. Install dependencies — `npm install`
+1. Install dependencies:
+```bash
+   npm install
+```
 2. Start the WebSocket server — `node server.js`
 3. Share your local IP address with your friends
 4. Friends enter the IP in the **Multiplayer** menu in-game
@@ -220,6 +223,25 @@ Each one rewards **diarite (◆)** and brings you one step closer to unlocking t
 | localStorage | Shop state, achievements, high scores |
 | HTML5 Audio | Sound effects and music |
 | Touch Events API | Mobile joystick support |
+
+---
+
+## 📸 Screenshots
+
+### 🏠 Starting Page
+![Starting Page](screenshots/Starting-Page.png)
+
+### 📋 Loading Page
+![Loading Page](screenshots/Loading-Page.png)
+
+### 🎮 Play Page
+![Play Page](screenshots/Play-Page.png)
+
+### ⚔️ In-Game Action
+![Ingame](screenshots/Ingame.png)
+
+### 🛒 Shop Page
+![Shop Page](screenshots/Shop-Page.png)
 
 ---
 
