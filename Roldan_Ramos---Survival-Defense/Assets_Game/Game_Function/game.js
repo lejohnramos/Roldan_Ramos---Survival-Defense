@@ -26,6 +26,13 @@ if (!CanvasRenderingContext2D.prototype.roundRect) {
 const sShoot = document.getElementById('sShoot');
 const sHit   = document.getElementById('sHit');
 const sLevel = document.getElementById('sLevel');
+const sHover = document.getElementById('sHover');
+
+function addHoverSound(selector) {
+  document.querySelectorAll(selector).forEach(btn => {
+    btn.addEventListener('mouseenter', () => playSound(sHover));
+  });
+}
 
 function playSound(s) {
   if (!s) return;
@@ -222,6 +229,7 @@ function drawMenuBackground(now) {
 let mbAnimating = false;
 function startMenuBg() {
   if(mbAnimating) return;
+  addHoverSound('button, .upgrade-card, .csp-card, .diff-btn');
   mbAnimating=true; mbLast=performance.now();
   function mbLoop(now){ if(!mbAnimating)return; drawMenuBackground(now); mbRaf=requestAnimationFrame(mbLoop); }
   mbRaf=requestAnimationFrame(mbLoop);
@@ -1780,16 +1788,18 @@ function showUpgrades() {
     const card=document.createElement('div');
     card.className='upgrade-card';
     card.innerHTML=`<div class="upgrade-icon">${up.icon}</div><div class="upgrade-name">${up.name}</div><div class="upgrade-desc">${up.desc}</div>`;
-    card.onclick=()=>{
-      applyUpgrade(up.id);
-      hideOverlay('upgradeOverlay');
-      state='playing';
-      lastTime=performance.now();
-      // 🔧 FORCE CAMERA UPDATE AND RENDER – fixes disappearing player/enemies
-      updateCamera();
-      render();
-      requestAnimationFrame(gameLoop);
-    };
+card.onclick = () => {
+  applyUpgrade(up.id);
+  hideOverlay('upgradeOverlay');
+  state = 'playing';
+  lastTime = performance.now();
+  // Make sure music isn't duplicated
+  const bgm = document.getElementById('bgMusic');
+  if (bgm && bgm.paused) bgm.play().catch(() => {});
+  updateCamera();
+  render();
+  requestAnimationFrame(gameLoop);
+};
     container.appendChild(card);
   }
   showOverlay('upgradeOverlay');
@@ -1997,7 +2007,7 @@ achievementStats.weaponsUnlocked = unlockedWeapons.size;
   shootTimer += dt;
   const fireInterval = Math.max(0.08, 0.55 / abilities.fireRate);
 
-  if (fireMode === 'auto') {
+if (fireMode === 'auto') {
     if (shootTimer >= fireInterval && enemies.length > 0) {
       shootTimer = 0;
       shootAnim = 0.12;
@@ -2005,14 +2015,6 @@ achievementStats.weaponsUnlocked = unlockedWeapons.size;
       else if (weaponType === 'orbit') { if (orbitBullets.length === 0) shoot(); }
       else shoot();
     }
-
-    } else if (weaponType === 'plasma') {
-  spawnBullet(aimAngle, 5, 120 * abilities.damage, true);
-  // Extra orbs spread slightly
-  spawnBullet(aimAngle - 0.15, 5, 80 * abilities.damage, true);
-  spawnBullet(aimAngle + 0.15, 5, 80 * abilities.damage, true);
-
-    
   } else {
     // Manual fire mode
     const canFire = shootTimer >= fireInterval;
@@ -2027,7 +2029,13 @@ achievementStats.weaponsUnlocked = unlockedWeapons.size;
       const worldMouseX = mouseX + camX;
       const worldMouseY = mouseY + camY;
       const aimAngle = Math.atan2(worldMouseY - player.y, worldMouseX - player.x);
-      shoot(aimAngle);
+      if (weaponType === 'plasma') {
+        spawnBullet(aimAngle, 5, 120 * abilities.damage, true);
+        spawnBullet(aimAngle - 0.15, 5, 80 * abilities.damage, true);
+        spawnBullet(aimAngle + 0.15, 5, 80 * abilities.damage, true);
+      } else {
+        shoot(aimAngle);
+      }
     }
   }
 
@@ -3428,6 +3436,7 @@ function drawZombie(size, wobble, zombieType, flashAlpha = 0) {
 
 // ========== START / REPLAY / MENU ==========
 function startGame() {
+  stopMenuMusic();
   if (lastWave !== null) {
     document.getElementById('msWave').textContent = lastWave;
     document.getElementById('msKills').textContent = lastKills;
@@ -3460,6 +3469,21 @@ function startBgMusic() {
   bgm.play().catch(() => {});
 }
 
+function startMenuMusic() {
+  const mm = document.getElementById('menuMusic');
+  if (!mm) return;
+  mm.volume = musicVol;
+  mm.currentTime = 0;
+  mm.play().catch(() => {});
+}
+
+function stopMenuMusic() {
+  const mm = document.getElementById('menuMusic');
+  if (!mm) return;
+  mm.pause();
+  mm.currentTime = 0;
+}
+
 function stopBgMusic() {
   const bgm = document.getElementById('bgMusic');
   if (!bgm) return;
@@ -3484,6 +3508,7 @@ function goToMenu() {
   }
   showOverlay('menuOverlay');
   updateMenuRecords();
+  startMenuMusic();
 }
 
 function updateMenuRecords() {
@@ -4046,6 +4071,7 @@ console.log('[Mobile patch loaded] isMobile:', isMobile());
 
 startMenuBg();
 updateMenuRecords();
+startMenuMusic();
 
 // Migrate old save data that's missing characters key
 (function migrateSaveData() {
