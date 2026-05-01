@@ -229,19 +229,19 @@ Each one rewards **diarite (◆)** and brings you one step closer to unlocking t
 ## 📸 Screenshots
 
 ### 🏠 Starting Page
-![Starting Page](screenshots/Starting-Page.png)
+![Starting Page](Assets/screenshots/Starting-Page.png)
 
 ### 📋 Loading Page
-![Loading Page](screenshots/Loading-Page.png)
+![Loading Page](Assets/screenshots/Loading-Page.png)
 
 ### 🎮 Play Page
-![Play Page](screenshots/Play-Page.png)
+![Play Page](/Assets/screenshots/Play-Page.png)
 
 ### ⚔️ In-Game Action
-![Ingame](screenshots/Ingame.png)
+![Ingame](Assets/screenshots/Ingame.png)
 
 ### 🛒 Shop Page
-![Shop Page](screenshots/Shop-Page.png)
+![Shop Page](Assets/screenshots/Shop-Page.png)
 
 ---
 
