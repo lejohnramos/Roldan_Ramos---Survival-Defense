@@ -663,10 +663,15 @@ function triggerWaveAnnounce(w) {
 }
 
 let shockwaves = [];
+let bloodSplatters = [];
+let scorchMarks = [];
+let lightningTimer = 0;
+let lightningFlash = 0;
+let nextLightning = 15 + Math.random() * 20;
+
 function addShockwave(x, y, maxR = 80, color = 'rgba(255,255,255,0.6)') {
   shockwaves.push({ x, y, r: 0, maxR, life: 1, color });
 }
-
 let envProps = [];
 const PROP_TYPES = ['tree', 'tree', 'tree', 'ruin', 'ruin', 'gravestone', 'gravestone', 'lamp', 'rock'];
 
@@ -1411,7 +1416,12 @@ function initGame() {
   shakeTimer    = 0; shakeMag = 0;
   vignetteTimer = 0;
   waveAnnounce  = null; lastAnnouncedWave = 0;
-  shockwaves    = [];
+  shockwaves      = [];
+  bloodSplatters  = [];
+  scorchMarks     = [];
+  lightningTimer  = 0;
+  lightningFlash  = 0;
+  nextLightning   = 15 + Math.random() * 20;
   unlockedWeapons = new Set(['basic']);
   characterXpBonus = stats.xpBonus;
   generateEnv();
@@ -1713,6 +1723,27 @@ function killEnemy(e) {
   }
 
   addParticles(e.x, e.y, e.color, 8);
+
+  // Blood splatters
+  const splatterCount = e.type === 'boss' ? 12 : e.type === 'elite' ? 7 : 5;
+  for (let i = 0; i < splatterCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = Math.random() * (e.r * 2.5);
+    bloodSplatters.push({
+      x: e.x + Math.cos(angle) * dist,
+      y: e.y + Math.sin(angle) * dist,
+      r: (Math.random() * 5 + 2) * (e.type === 'boss' ? 2 : 1),
+      alpha: 0.6 + Math.random() * 0.4,
+      color: e.type === 'splitter' ? '#4a6a10' : e.type === 'shielded' ? '#164e63' : '#7f1d1d',
+    });
+  }
+
+  // Scorch mark
+  scorchMarks.push({
+    x: e.x, y: e.y,
+    r: e.type === 'boss' ? 55 : e.type === 'elite' ? 28 : 18,
+    alpha: 0.7,
+  });
   addFloatingText(e.x, e.y - 10, '+' + finalXp + ' xp', '#818cf8');
   spawnPickup(e.x, e.y);
   addShockwave(e.x, e.y, e.type === 'boss' ? 140 : 55, e.color);
@@ -2140,6 +2171,26 @@ if (fireMode === 'auto') {
 
   for (const e of enemies) if (e.hitFlash > 0) e.hitFlash -= dt;
   if (shakeTimer > 0) { shakeTimer -= dt; if (shakeTimer <= 0) { shakeTimer = 0; shakeMag = 0; } }
+
+  // Lightning
+  lightningTimer += dt;
+  if (lightningTimer >= nextLightning) {
+    lightningTimer = 0;
+    nextLightning = 15 + Math.random() * 25;
+    lightningFlash = 1;
+    triggerShake(3, 0.2);
+  }
+  if (lightningFlash > 0) lightningFlash -= dt * 8;
+
+  // Fade blood splatters and scorch marks
+  for (let i = bloodSplatters.length - 1; i >= 0; i--) {
+    bloodSplatters[i].alpha -= dt * 0.08;
+    if (bloodSplatters[i].alpha <= 0) bloodSplatters.splice(i, 1);
+  }
+  for (let i = scorchMarks.length - 1; i >= 0; i--) {
+    scorchMarks[i].alpha -= dt * 0.04;
+    if (scorchMarks[i].alpha <= 0) scorchMarks.splice(i, 1);
+  }
   if (vignetteTimer > 0) vignetteTimer -= dt;
   if (waveAnnounce) { waveAnnounce.life -= dt * 1.2; if (waveAnnounce.life <= 0) waveAnnounce = null; }
   if (wave > lastAnnouncedWave) triggerWaveAnnounce(wave);
@@ -2195,6 +2246,32 @@ function render() {
   drawWorldBorder();
 
   for (const p of envProps) drawProp(p);
+
+  // Scorch marks
+  for (const sc of scorchMarks) {
+    const sx = sc.x - camX, sy = sc.y - camY;
+    if (sx < -sc.r || sx > W + sc.r || sy < -sc.r || sy > H + sc.r) continue;
+    ctx.save();
+    ctx.globalAlpha = sc.alpha * 0.6;
+    const sg = ctx.createRadialGradient(sx, sy, 0, sx, sy, sc.r);
+    sg.addColorStop(0, 'rgba(0,0,0,0.85)');
+    sg.addColorStop(0.5, 'rgba(20,10,0,0.5)');
+    sg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.arc(sx, sy, sc.r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // Blood splatters
+  for (const bl of bloodSplatters) {
+    const bx = bl.x - camX, by = bl.y - camY;
+    if (bx < -bl.r || bx > W + bl.r || by < -bl.r || by > H + bl.r) continue;
+    ctx.save();
+    ctx.globalAlpha = bl.alpha * 0.75;
+    ctx.fillStyle = bl.color;
+    ctx.beginPath(); ctx.arc(bx, by, bl.r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
 
   for (const s of shockwaves) {
     const scx = s.x - camX, scy = s.y - camY;
@@ -2377,12 +2454,37 @@ function render() {
     ctx.globalAlpha = 1;
   }
 
-  const plx = player.x - camX, ply = player.y - camY;
-  const grd = ctx.createRadialGradient(plx, ply, 2, plx, ply, 55);
-  grd.addColorStop(0, 'rgba(96,165,250,0.1)');
-  grd.addColorStop(1, 'rgba(96,165,250,0)');
+ const plx = player.x - camX, ply = player.y - camY;
+
+  // Combo glow — grows and shifts color as combo increases
+  const comboGlowSize = 55 + Math.min(combo * 4, 80);
+  const comboIntensity = Math.min(combo / 15, 1);
+  const comboColor = combo >= 10
+    ? `rgba(251,191,36,${0.08 + comboIntensity * 0.18})`  // gold at high combo
+    : combo >= 5
+    ? `rgba(167,139,250,${0.08 + comboIntensity * 0.15})` // purple at mid combo
+    : 'rgba(96,165,250,0.1)';                              // blue default
+  const comboBorderColor = combo >= 10 ? '#fbbf24' : combo >= 5 ? '#a78bfa' : '#60a5fa';
+
+  const grd = ctx.createRadialGradient(plx, ply, 2, plx, ply, comboGlowSize);
+  grd.addColorStop(0, comboColor);
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = grd;
-  ctx.beginPath(); ctx.arc(plx, ply, 55, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(plx, ply, comboGlowSize, 0, Math.PI * 2); ctx.fill();
+
+  // Pulsing ring at high combos
+  if (combo >= 5) {
+    const pulse = 0.4 + 0.6 * Math.abs(Math.sin(Date.now() * 0.004));
+    ctx.save();
+    ctx.globalAlpha = pulse * 0.5 * comboIntensity;
+    ctx.strokeStyle = comboBorderColor;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = comboBorderColor;
+    ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(plx, ply, 22 + combo * 0.8, 0, Math.PI * 2); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
 
   ctx.save();
   ctx.translate(plx, ply);
@@ -2408,6 +2510,32 @@ function render() {
   vgn.addColorStop(1, 'rgba(0,0,0,0.72)');
   ctx.fillStyle = vgn;
   ctx.fillRect(0, 0, W, H);
+
+  // Lightning flash
+  if (lightningFlash > 0) {
+    const lf = Math.max(0, lightningFlash);
+    ctx.save();
+    ctx.globalAlpha = lf * 0.18;
+    ctx.fillStyle = '#e0f2fe';
+    ctx.fillRect(0, 0, W, H);
+    // Lightning bolt lines
+    ctx.globalAlpha = lf * 0.6;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.shadowColor = '#bae6fd';
+    ctx.shadowBlur = 20;
+    const boltX = Math.random() * W;
+    ctx.beginPath();
+    let by2 = 0;
+    ctx.moveTo(boltX, by2);
+    while (by2 < H * 0.7) {
+      by2 += Math.random() * 60 + 20;
+      ctx.lineTo(boltX + (Math.random() - 0.5) * 80, by2);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
 
   if (vignetteTimer > 0) {
     const intensity = Math.min(1, vignetteTimer / 0.45);
@@ -4193,9 +4321,24 @@ function showAchievementsPanel() {
   let particleContainer = null;
   let livePanel = null;
 
-  function clearMenuEnhancements() {
+function clearMenuEnhancements() {
     if (particleContainer) particleContainer.remove();
     if (livePanel) livePanel.remove();
+    // Remove community weapon
+    const cw = document.querySelector('.community-weapon');
+    if (cw) cw.remove();
+    // Remove lobby bar
+    const lb = document.querySelector('.lobby-bar');
+    if (lb) lb.remove();
+    // Remove chat feed
+    const cf = document.querySelector('.live-chat-feed');
+    if (cf) cf.remove();
+    // Remove kps graph
+    const kg = document.querySelector('.kps-graph');
+    if (kg) kg.remove();
+    // Remove mouse glow
+    const mg = document.querySelector('.mouse-glow');
+    if (mg) mg.remove();
     countersIntervals.forEach(clearInterval);
     countersIntervals = [];
     if (particleInterval) clearInterval(particleInterval);
@@ -4212,12 +4355,24 @@ function showAchievementsPanel() {
 
     // ----- Rotating "Community Choice" weapon -----
 const communityWeapons = [
-  { icon: "🔫", name: "Basic Rifle",   votes: "10.2k" },
-  { icon: "🌊", name: "Spread Shot",   votes: "8.7k"  },
-  { icon: "🎯", name: "Sniper Rifle",  votes: "6.5k"  },
-  { icon: "🚀", name: "Rocket Launcher", votes: "12.1k" },
-  { icon: "🔮", name: "Orbit Shield",  votes: "5.4k"  },
-  { icon: "🔴", name: "Laser Beam",    votes: "9.3k"  }
+  { icon: "🔫", name: "Basic Rifle",      votes: "10.2k" },
+  { icon: "🌊", name: "Spread Shot",      votes: "8.7k"  },
+  { icon: "🎯", name: "Sniper Rifle",     votes: "6.5k"  },
+  { icon: "🚀", name: "Rocket Launcher",  votes: "12.1k" },
+  { icon: "🔮", name: "Orbit Shield",     votes: "5.4k"  },
+  { icon: "🔴", name: "Laser Beam",       votes: "9.3k"  },
+  { icon: "⚡", name: "Swift Boots",      votes: "7.1k"  },
+  { icon: "🔥", name: "Power Strike",     votes: "11.4k" },
+  { icon: "💠", name: "Big Bullet",       votes: "4.8k"  },
+  { icon: "💚", name: "Regeneration",     votes: "6.2k"  },
+  { icon: "❤️",  name: "Fortify",          votes: "8.9k"  },
+  { icon: "✨", name: "Multi-Shot",       votes: "13.1k" },
+  { icon: "🌀", name: "Rapid Fire",       votes: "9.7k"  },
+  { icon: "☠️",  name: "Plasma Cannon",   votes: "15.3k" },
+  { icon: "🗡️", name: "Ninja Blades",    votes: "7.6k"  },
+  { icon: "🛡️", name: "Heavy Armor",     votes: "5.9k"  },
+  { icon: "💉", name: "Medic Syringe",    votes: "4.3k"  },
+  { icon: "🔪", name: "Assassin Blades",  votes: "8.1k"  },
 ];
 
 const weaponContainer = document.createElement('div');
@@ -4231,28 +4386,38 @@ weaponContainer.innerHTML = `
 document.body.appendChild(weaponContainer);
 
 let weaponIdx = 0;
+
 function rotateCommunityWeapon() {
   weaponIdx = (weaponIdx + 1) % communityWeapons.length;
   const w = communityWeapons[weaponIdx];
-  const iconSpan = document.getElementById('communityIcon');
-  const nameSpan = document.getElementById('communityName');
-  const voteSpan = document.getElementById('communityVotes');
+
+  // Use querySelector on weaponContainer instead of getElementById
+  const iconSpan = weaponContainer.querySelector('#communityIcon');
+  const nameSpan = weaponContainer.querySelector('#communityName');
+  const voteSpan = weaponContainer.querySelector('#communityVotes');
   if (!iconSpan || !nameSpan || !voteSpan) return;
-  
-  // Flip animation
-  weaponContainer.classList.add('flip');
+
+  weaponContainer.style.transition = 'opacity 0.2s';
+  weaponContainer.style.opacity = '0';
   setTimeout(() => {
     iconSpan.innerText = w.icon;
     nameSpan.innerText = w.name;
     voteSpan.innerText = w.votes + ' votes';
-    weaponContainer.classList.remove('flip');
+    weaponContainer.style.opacity = '1';
   }, 200);
 }
 
+// Shuffle the weapons array so order is random every time menu opens
+communityWeapons.sort(() => Math.random() - 0.5);
+
+// Rotate immediately once after 2 seconds
+setTimeout(() => rotateCommunityWeapon(), 2000);
+
+// Then rotate every 10 seconds
 countersIntervals.push(setInterval(() => {
   if (!active) return;
   rotateCommunityWeapon();
-}, 5000));
+}, 10000));
 
     // ----- Voice line popups -----
 const voiceLines = [
@@ -4336,23 +4501,47 @@ countersIntervals.push(setInterval(() => {
   for (let i = 0; i < 2; i++) spawnCrystal();
 }, 3000));
 
-    const lobbyBar = document.createElement('div');
+const lobbyBar = document.createElement('div');
 lobbyBar.className = 'lobby-bar';
 lobbyBar.innerHTML = `
   <div class="lobby-stat"><span class="dot"></span><span>IN LOBBY: <span id="lobbyCount">342</span></span></div>
-  <div class="lobby-stat">🕒 AVG WAIT: 12s</div>
-  <div class="lobby-stat">⚔️ GAMES ACTIVE: 47</div>
+  <div class="lobby-stat">🕒 AVG WAIT: <span id="lobbyWait">12</span>s</div>
+  <div class="lobby-stat">⚔️ GAMES ACTIVE: <span id="lobbyGames">47</span></div>
 `;
 document.body.appendChild(lobbyBar);
-// Fake counter for lobby count
+
 let lobbyPlayers = 342;
+let lobbyWait = 12;
+let lobbyGames = 47;
+
+// In lobby count
 countersIntervals.push(setInterval(() => {
   if (!active) return;
   lobbyPlayers = 320 + Math.floor(Math.random() * 80);
-  const span = document.getElementById('lobbyCount');
+  const span = lobbyBar.querySelector('#lobbyCount');
   if (span) span.innerText = lobbyPlayers;
+}, 3000));
+
+// Avg wait time
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
+  lobbyWait = Math.max(5, Math.min(30, lobbyWait + change));
+  const span = lobbyBar.querySelector('#lobbyWait');
+  if (span) {
+    span.innerText = lobbyWait;
+    span.style.color = lobbyWait > 20 ? '#f87171' : lobbyWait > 12 ? '#fbbf24' : '#34d399';
+  }
 }, 4000));
-// Cleanup later
+
+// Games active
+countersIntervals.push(setInterval(() => {
+  if (!active) return;
+  const change = Math.floor(Math.random() * 7) - 3; // -3 to +3
+  lobbyGames = Math.max(20, Math.min(120, lobbyGames + change));
+  const span = lobbyBar.querySelector('#lobbyGames');
+  if (span) span.innerText = lobbyGames;
+}, 5000));
 
     const chatBox = document.createElement('div');
 chatBox.className = 'live-chat-feed';
@@ -4391,7 +4580,6 @@ document.addEventListener('mousemove', (e) => {
   glow.style.top = e.clientY + 'px';
 });
 
-    clearMenuEnhancements(); // safety
     active = true;
     document.body.classList.add('menu-active');
 
@@ -4529,11 +4717,14 @@ document.addEventListener('mousemove', (e) => {
     if (id === 'menuOverlay') checkMenu();
   };
 
-  const origStartGame = window.startGame;
-  window.startGame = function() {
-    clearMenuEnhancements();
-    origStartGame();
-  };
+const origStartGame = window.startGame;
+window.startGame = function() {
+  clearMenuEnhancements();
+  // Remove community weapon widget if it exists
+  const cw = document.querySelector('.community-weapon');
+  if (cw) cw.remove();
+  origStartGame();
+};
 
   checkMenu();
 })();
