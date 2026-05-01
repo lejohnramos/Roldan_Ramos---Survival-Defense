@@ -1610,7 +1610,7 @@ function shoot(overrideAngle = null) {
       if (e.hp <= 0) { killEnemy(e); return false; }
       return true;
     });
-  } else if (weaponType === 'rocket') {
+} else if (weaponType === 'rocket') {
     const { nearEnemy } = getNearestEnemy();
     const target = fireMode === 'manual' ? null : nearEnemy;
     rockets.push({
@@ -1628,6 +1628,10 @@ function shoot(overrideAngle = null) {
         color: '#fb923c', exploded: false
       });
     }
+  } else if (weaponType === 'plasma') {
+    spawnBullet(aimAngle, 5, 120 * abilities.damage, true);
+    spawnBullet(aimAngle - 0.15, 5, 80 * abilities.damage, true);
+    spawnBullet(aimAngle + 0.15, 5, 80 * abilities.damage, true);
   }
 }
 
@@ -1654,7 +1658,7 @@ function updateRockets() {
     rk.x += rk.vx; rk.y += rk.vy;
     if (Math.hypot(rk.x - player.x, rk.y - player.y) > 1200) { rockets.splice(i,1); continue; }
     let exploded = false;
-    for (let j = enemies.length-1; j>=0; j--) {
+for (let j = enemies.length-1; j>=0; j--) {
       const e = enemies[j];
       if (Math.hypot(rk.x-player.x,rk.y-player.y)>20 && Math.hypot(rk.x-e.x,rk.y-e.y)<e.r+rk.r) {
         for (const se of enemies) {
@@ -1663,11 +1667,17 @@ function updateRockets() {
         }
         addParticles(rk.x,rk.y,'#fb923c',18);
         addFloatingText(rk.x,rk.y-14,'BOOM!','#fb923c');
-        enemies=enemies.filter(e=>e.hp>0);
+        // ← REPLACED: now properly awards XP/diarite for splash kills
+        for (let k = enemies.length-1; k>=0; k--) {
+          if (enemies[k].hp <= 0) {
+            killEnemy(enemies[k]);
+            enemies.splice(k, 1);
+          }
+        }
         rockets.splice(i,1); exploded=true; break;
       }
     }
-    if (exploded){for(const e of [...enemies])if(e.hp<=0)killEnemy(e);enemies=enemies.filter(e=>e.hp>0);}
+    if (exploded) return;   // already handled above, remove the old double-filter line
   }
 }
 
